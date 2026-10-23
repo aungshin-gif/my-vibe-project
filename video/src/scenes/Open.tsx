@@ -9,7 +9,7 @@ import { theme } from "../theme";
 // that hands over to the dive into the model (Scene 2).
 export const CLIP_FRAMES = 90;
 const XFADE_FROM = 74;
-export const OPEN_FRAMES = 150;
+export const OPEN_FRAMES = 138;
 
 const ClipLayer: React.FC = () => {
   const frame = useCurrentFrame();

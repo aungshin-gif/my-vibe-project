@@ -7,8 +7,8 @@ import { theme } from "../theme";
 // Scene 6 (3s = 90f): the still of the man, camera slowly pulling back (scale
 // 1.14 -> 1.0) while the cyan wash from the model fades away, then a close-up
 // of Claude's reply typing out, then a smooth fade to black.
-export const CLOSE_FRAMES = 90;
-const SWITCH = 36;
+export const CLOSE_FRAMES = 102;
+const SWITCH = 24;
 
 const Man: React.FC = () => {
   const frame = useCurrentFrame();

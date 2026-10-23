@@ -74,8 +74,8 @@ export const ChatUi: React.FC<{ mode: ChatMode }> = ({ mode }) => {
   const sent = mode === "reply" || frame >= sendAt;
   const inputText = mode === "send" && frame < sendAt ? typed(msg, frame, 6, 2) : "";
   const userP = mode === "reply" ? 1 : spring({ frame: frame - sendAt, fps, config: theme.spring.snappy });
-  const replyText = mode === "reply" ? typed(answer, frame, 22, 1.6) : "";
-  const replyP = mode === "reply" ? spring({ frame: frame - 14, fps, config: theme.spring.smooth }) : 0;
+  const replyText = mode === "reply" ? typed(answer, frame, 14, 1) : "";
+  const replyP = mode === "reply" ? spring({ frame: frame - 8, fps, config: theme.spring.smooth }) : 0;
   const push = interpolate(frame, [0, 120], [1, 1.035], { easing: theme.ease.inOut, ...clamp });
 
   return (
