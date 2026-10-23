@@ -17,7 +17,7 @@ const ClipLayer: React.FC = () => {
   const o = interpolate(frame, [XFADE_FROM, CLIP_FRAMES], [1, 0], { easing: theme.ease.inOut, ...clamp });
   return (
     <AbsoluteFill style={{ opacity: o }}>
-      <OffthreadVideo src={staticFile("scene1.mp4")} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <OffthreadVideo src={staticFile("scene1_uhd.mp4")} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
     </AbsoluteFill>
   );
 };

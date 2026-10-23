@@ -14,6 +14,7 @@ const H = theme.size.h;
 const FOCAL = 900;
 const CX = W / 2;
 const CY = H / 2;
+const HI = 2; // canvas supersampling for UHD output
 
 const RINGS = 26;
 const RING_GAP = 240;
@@ -67,7 +68,9 @@ export const DataStorm: React.FC<{
     const cv = ref.current;
     const ctx = cv?.getContext("2d");
     if (!cv || !ctx) return;
-    ctx.clearRect(0, 0, W, H);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    ctx.scale(HI, HI); // backing store is HI x larger so UHD renders stay sharp
     ctx.globalCompositeOperation = "lighter";
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -160,5 +163,5 @@ export const DataStorm: React.FC<{
     }
   });
 
-  return <canvas ref={ref} width={W} height={H} style={{ position: "absolute", inset: 0 }} />;
+  return <canvas ref={ref} width={W * HI} height={H * HI} style={{ position: "absolute", left: 0, top: 0, width: W, height: H }} />;
 };
