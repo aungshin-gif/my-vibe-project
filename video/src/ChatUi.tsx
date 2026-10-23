@@ -44,7 +44,7 @@ const NAV: { icon: "plus" | "search" | "box" | "grid" | "chat"; label: string }[
   { icon: "box", label: "Projects" },
   { icon: "grid", label: "Artifacts" },
 ];
-const RECENTS = ["Landing page copy", "Weekly planning", "Bot error debugging"];
+const RECENTS = ["Portfolio website ideas", "How neural networks learn", "Python study plan"];
 
 const typed = (text: string, frame: number, start: number, perChar: number) =>
   text.slice(0, Math.max(0, Math.min(text.length, Math.floor((frame - start) / perChar))));
