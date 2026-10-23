@@ -1,11 +1,12 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, spring } from "remotion";
 import { Chip, chipW } from "../Chip";
 import { beatPulse } from "../beats";
 import { clamp } from "../lib";
 import { lockFrames, RESPONSE, stepStart, T } from "../timeline";
 import { railLayout } from "../Rail";
 import { theme } from "../theme";
+import { useF, DESIGN_FPS } from "../time";
 
 // Scene 4: next-token selection. The token rain streams behind (DataStorm);
 // here, for each step, candidate tokens fly out of the stream and orbit a
@@ -64,9 +65,9 @@ const Reticle: React.FC<{ frame: number; lockPulse: number }> = ({ frame, lockPu
 };
 
 export const NextToken: React.FC = () => {
-  const local = useCurrentFrame();
+  const local = useF();
   const frame = local + T.next.from; // global frame
-  const { fps } = useVideoConfig();
+  const fps = DESIGN_FPS;
   const dur = T.next.dur;
   const rail = railLayout();
 

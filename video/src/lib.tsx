@@ -1,6 +1,7 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate } from "remotion";
 import { theme } from "./theme";
+import { useF } from "./time";
 
 export const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -11,7 +12,7 @@ export const rng = (seed: number) => () => {
 };
 
 export const BgMesh: React.FC<{ hue?: number }> = ({ hue = 0 }) => {
-  const frame = useCurrentFrame();
+  const frame = useF();
   const d1 = Math.sin(frame / 55) * 60;
   const d2 = Math.cos(frame / 70) * 50;
   return (
@@ -31,7 +32,7 @@ export const Grade: React.FC = () => (
 );
 
 export const Grain: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useF();
   const noise = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")`;
   return (
     <AbsoluteFill style={{ pointerEvents: "none", backgroundImage: noise, backgroundSize: "220px", backgroundPosition: `${(frame * 7) % 220}px ${(frame * 13) % 220}px`, opacity: 0.07, mixBlendMode: "overlay" }} />

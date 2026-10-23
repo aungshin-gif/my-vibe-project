@@ -1,7 +1,8 @@
 import React, { useLayoutEffect, useRef } from "react";
-import { useCurrentFrame } from "remotion";
+
 import { rng } from "./lib";
 import { theme } from "./theme";
+import { useF } from "./time";
 
 // Sci-fi backdrop drawn on a canvas (thousands of elements stay cheap):
 //  - a tunnel of glowing rings the camera flies down,
@@ -59,7 +60,7 @@ export const DataStorm: React.FC<{
   tokens: number; // 0..1 token rain strength
   pulse?: number; // 0..1 beat pulse
 }> = ({ camZ, speed, tunnel, tokens, pulse = 0 }) => {
-  const frame = useCurrentFrame();
+  const frame = useF();
   const ref = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {

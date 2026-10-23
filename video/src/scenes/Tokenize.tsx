@@ -1,9 +1,10 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, spring } from "remotion";
 import { Chip, chipW, GAP } from "../Chip";
 import { clamp } from "../lib";
 import { INPUT, T } from "../timeline";
 import { theme } from "../theme";
+import { useF, DESIGN_FPS } from "../time";
 
 // Scene 3: the raw message is scanned by a beam and cut into token blocks.
 // Each block gets an embedding profile and attention arcs light up between
@@ -19,8 +20,8 @@ const BEAM_FROM = 8;
 const BEAM_TO = 52;
 
 export const Tokenize: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useF();
+  const fps = DESIGN_FPS;
   const dur = T.tokenize.dur;
 
   const widths = INPUT.map(chipW);

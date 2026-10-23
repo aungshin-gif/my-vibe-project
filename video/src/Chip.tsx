@@ -1,6 +1,7 @@
 import React from "react";
-import { useCurrentFrame } from "remotion";
+
 import { theme } from "./theme";
+import { useF } from "./time";
 
 export const chipW = (t: string) => Math.max(96, t.length * 28 + 72);
 export const CHIP_H = 92;
@@ -21,7 +22,7 @@ export const Chip: React.FC<{
   tilt?: number; // degrees around Y
   seed?: number;
 }> = ({ text, x, y, p, glow = 0.3, hot = false, scale = 1, tilt = 0, seed = 0 }) => {
-  const frame = useCurrentFrame();
+  const frame = useF();
   if (p <= 0.001) return null;
   const w = chipW(text);
   const c1 = hot ? theme.colors.magenta : theme.colors.cyan;

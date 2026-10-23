@@ -1,10 +1,11 @@
 import React from "react";
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, spring } from "remotion";
 import { Chip, chipW, GAP } from "./Chip";
 import { beatPulse } from "./beats";
 import { clamp } from "./lib";
 import { lockFrames, PULSE_FRAME, RAIL_DROP, RESPONSE, T } from "./timeline";
 import { theme } from "./theme";
+import { useF, DESIGN_FPS } from "./time";
 
 // Final sentence row. Tokens sit at their final positions; each one "locks
 // in" at its lock frame. The row starts near the top, then drops to centre.
@@ -22,8 +23,8 @@ export const railLayout = () => {
 };
 
 export const Rail: React.FC = () => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useF();
+  const fps = DESIGN_FPS;
   const { x, y } = railLayout();
   const yy = y(frame);
   const exit = interpolate(frame, [T.total - 34, T.total - 20], [0, 1], { easing: theme.ease.in, ...clamp });

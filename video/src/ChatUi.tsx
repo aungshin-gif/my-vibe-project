@@ -1,7 +1,8 @@
 import React from "react";
-import { Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { Img, interpolate, spring, staticFile } from "remotion";
 import { clamp } from "./lib";
 import { theme } from "./theme";
+import { useF, DESIGN_FPS } from "./time";
 
 // Dark chat app used for the opening/ending close-ups, laid out like the
 // Claude app: sidebar (nav, recents, profile with plan) + conversation +
@@ -64,8 +65,8 @@ export type ChatMode = "send" | "reply";
 // send:  "Hello, Claude." is typed into the input box, then sent (Enter).
 // reply: the message is already sent; Claude's answer types out.
 export const ChatUi: React.FC<{ mode: ChatMode }> = ({ mode }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const frame = useF();
+  const fps = DESIGN_FPS;
   const msg = "Hello, Claude.";
   const answer = "Hello! How can I help you?";
 

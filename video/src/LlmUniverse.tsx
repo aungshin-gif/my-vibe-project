@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate } from "remotion";
 import { beatPulse } from "./beats";
 import { DataStorm } from "./DataStorm";
 import { BgMesh, clamp, Finish } from "./lib";
@@ -8,21 +8,24 @@ import { Tokenize } from "./scenes/Tokenize";
 import { NextToken } from "./scenes/NextToken";
 import { PULLBACK_FROM, PULSE_FRAME, T } from "./timeline";
 import { theme } from "./theme";
+import { useF, Seq } from "./time";
 
 // Scenes 2-5 as one continuous camera move: dive down a ring tunnel (fast),
 // cruise through the token stream while it thinks, then pull back out.
 const speedAt = (f: number) =>
   interpolate(f, [0, 30, 110, 240, PULLBACK_FROM, PULLBACK_FROM + 24, T.total], [74, 64, 18, 12, 8, -58, -84], clamp);
 
+// Integrates speed per design frame; the fractional part keeps it smooth at 90fps.
 const camZAt = (f: number) => {
+  const whole = Math.floor(f);
   let z = 0;
-  for (let g = 0; g < f; g++) z += speedAt(g);
-  return z;
+  for (let g = 0; g < whole; g++) z += speedAt(g);
+  return z + (f - whole) * speedAt(whole);
 };
 
 // "Response ready": a cyan -> violet ring races out through the whole scene.
 const ReadyPulse: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useF();
   const t = interpolate(frame, [PULSE_FRAME, PULSE_FRAME + 34], [0, 1], { easing: theme.ease.out, ...clamp });
   if (t <= 0 || t >= 1) return null;
   const r = 80 + t * 1500;
@@ -34,7 +37,7 @@ const ReadyPulse: React.FC = () => {
 };
 
 export const LlmUniverse: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useF();
   const pulse = beatPulse(frame);
   const open = interpolate(frame, [0, 22], [1, 0], clamp);
   const wash = interpolate(frame, [T.total - 18, T.total - 1], [0, 1], { easing: theme.ease.in, ...clamp });
@@ -48,12 +51,12 @@ export const LlmUniverse: React.FC = () => {
       <BgMesh />
       <DataStorm camZ={camZAt(frame)} speed={speedAt(frame)} tunnel={tunnel} tokens={tokens} pulse={pulse} />
 
-      <Sequence from={T.tokenize.from} durationInFrames={T.tokenize.dur}>
+      <Seq from={T.tokenize.from} durationInFrames={T.tokenize.dur}>
         <Tokenize />
-      </Sequence>
-      <Sequence from={T.next.from} durationInFrames={T.next.dur}>
+      </Seq>
+      <Seq from={T.next.from} durationInFrames={T.next.dur}>
         <NextToken />
-      </Sequence>
+      </Seq>
       <Rail />
       <ReadyPulse />
 
