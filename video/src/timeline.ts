@@ -1,14 +1,13 @@
 import { nearestBeatFrame } from "./beats";
 
-// Scenes 2-5 of the 25s cut = 17s (510 frames @30fps). Frames are local to
-// this composition; it is placed at 5s..22s of the final edit.
+// Scenes 2-5 of the 30s cut = 22s (660 frames @30fps), placed after the 4.6s
+// opening. Frames below are local to this composition.
 export const T = {
-  total: 510,
-  tokenize: { from: 110, dur: 165 },
-  next: { from: 260, dur: 165 },
-  construct: { from: 415, dur: 95 },
-  stepLen: 35,
-  firstStep: 268,
+  total: 660,
+  tokenize: { from: 100, dur: 140 },
+  next: { from: 236, dur: 296 },
+  stepLen: 36,
+  firstStep: 242,
 } as const;
 
 export const RESPONSE = ["Hello", "!", "How", "can", "I", "help", "you", "?"];
@@ -16,14 +15,9 @@ export const INPUT = ["Hello", ",", "Claude", "."];
 
 export const stepStart = (k: number) => T.firstStep + k * T.stepLen;
 
-// When each response token locks into the rail. First four land on the beat
-// grid inside the probability scene; the rest follow in Scene 5.
-export const lockFrames: number[] = [
-  ...[0, 1, 2, 3].map((k) => nearestBeatFrame(stepStart(k) + 24)),
-  428,
-  435,
-  442,
-  449,
-];
+// One token is chosen per step, locking into the rail on a beat.
+export const lockFrames: number[] = RESPONSE.map((_, k) => nearestBeatFrame(stepStart(k) + 26));
 
-export const PULSE_FRAME = 458; // cyan/violet "response ready" pulse
+export const RAIL_DROP: [number, number] = [516, 546]; // rail moves to centre
+export const PULSE_FRAME = 552; // cyan/violet "response ready" pulse
+export const PULLBACK_FROM = 572; // camera starts travelling back

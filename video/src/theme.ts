@@ -30,10 +30,3 @@ export const theme = {
     bouncy: { damping: 11, stiffness: 170, mass: 0.7 },
   },
 } as const;
-
-// Layer palette, near -> far: cyan -> blue -> violet -> magenta.
-export const layerColor = (t: number): string => {
-  const stops = [theme.colors.cyan, theme.colors.blue, theme.colors.violet, theme.colors.magenta];
-  const i = Math.min(stops.length - 2, Math.floor(t * (stops.length - 1)));
-  return t * (stops.length - 1) - i < 0.5 ? stops[i] : stops[i + 1];
-};

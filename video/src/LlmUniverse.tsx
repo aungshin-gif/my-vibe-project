@@ -1,45 +1,23 @@
 import React from "react";
 import { AbsoluteFill, interpolate, Sequence, useCurrentFrame } from "remotion";
 import { beatPulse } from "./beats";
+import { DataStorm } from "./DataStorm";
 import { BgMesh, clamp, Finish } from "./lib";
-import { NeuralField } from "./NeuralField";
 import { Rail } from "./Rail";
 import { Tokenize } from "./scenes/Tokenize";
 import { NextToken } from "./scenes/NextToken";
-import { PULSE_FRAME, T } from "./timeline";
+import { PULLBACK_FROM, PULSE_FRAME, T } from "./timeline";
 import { theme } from "./theme";
 
-// Scenes 2-5 as one continuous camera move through the network (no hard cuts):
-// dive in -> slow drift (tokenize, next-token) -> pull back out.
-const camZ = (f: number) => {
-  if (f < 125) return interpolate(f, [0, 125], [0, 1700], { easing: theme.ease.inOut });
-  if (f < 455) return interpolate(f, [125, 455], [1700, 2500], { easing: theme.ease.out, ...clamp });
-  return interpolate(f, [455, 502], [2500, 500], { easing: theme.ease.in, ...clamp });
-};
+// Scenes 2-5 as one continuous camera move: dive down a ring tunnel (fast),
+// cruise through the token stream while it thinks, then pull back out.
+const speedAt = (f: number) =>
+  interpolate(f, [0, 30, 110, 240, PULLBACK_FROM, PULLBACK_FROM + 24, T.total], [74, 64, 18, 12, 8, -58, -84], clamp);
 
-const waveZ = (f: number) => {
-  if (f < 125) return interpolate(f, [0, 125], [200, 3000], { easing: theme.ease.out });
-  if (f < 400) return 1900 + Math.sin(f / 26) * 500; // slow shimmer while computing
-  return interpolate(f, [PULSE_FRAME - 6, PULSE_FRAME + 36], [4600, 300], { easing: theme.ease.inOut, ...clamp });
-};
-
-// Streaks rushing past the camera as it dives into the message (frames 0-45).
-const Dive: React.FC = () => {
-  const frame = useCurrentFrame();
-  const fade = interpolate(frame, [0, 8, 34, 48], [0, 1, 1, 0], clamp);
-  if (fade <= 0) return null;
-  return (
-    <svg width={1920} height={1080} style={{ position: "absolute", inset: 0, opacity: fade }}>
-      {Array.from({ length: 70 }, (_, i) => {
-        const a = (i * 137.5 * Math.PI) / 180;
-        const sp = 0.6 + ((i * 53) % 10) / 10;
-        const r = interpolate(frame, [0, 46], [30, 1100 * sp], { easing: theme.ease.in, ...clamp });
-        const len = r * 0.35;
-        const col = i % 3 === 0 ? theme.colors.magenta : i % 3 === 1 ? theme.colors.cyan : theme.colors.violet;
-        return <line key={i} x1={960 + Math.cos(a) * (r - len)} y1={540 + Math.sin(a) * (r - len)} x2={960 + Math.cos(a) * r} y2={540 + Math.sin(a) * r} stroke={col} strokeWidth={2 + sp * 2} strokeLinecap="round" />;
-      })}
-    </svg>
-  );
+const camZAt = (f: number) => {
+  let z = 0;
+  for (let g = 0; g < f; g++) z += speedAt(g);
+  return z;
 };
 
 // "Response ready": a cyan -> violet ring races out through the whole scene.
@@ -58,16 +36,18 @@ const ReadyPulse: React.FC = () => {
 export const LlmUniverse: React.FC = () => {
   const frame = useCurrentFrame();
   const pulse = beatPulse(frame);
-  const open = interpolate(frame, [0, 22], [1, 0], { ...clamp });
-  const wash = interpolate(frame, [492, 509], [0, 1], { easing: theme.ease.in, ...clamp });
-  const dim = interpolate(frame, [110, 150], [1, 0.62], { ...clamp }) * interpolate(frame, [400, 440], [1, 0.8], { ...clamp });
+  const open = interpolate(frame, [0, 22], [1, 0], clamp);
+  const wash = interpolate(frame, [T.total - 18, T.total - 1], [0, 1], { easing: theme.ease.in, ...clamp });
+
+  // tunnel is bold on entry and exit, subtle while thinking; token rain peaks mid-scene
+  const tunnel = interpolate(frame, [0, 120, 200, 540, 590, T.total], [1, 1, 0.42, 0.42, 0.9, 1], clamp);
+  const tokens = interpolate(frame, [0, 70, 150, 540, 600, T.total], [0.3, 0.7, 1, 1, 0.5, 0.25], clamp);
 
   return (
     <AbsoluteFill style={{ background: theme.colors.bg }}>
       <BgMesh />
-      <NeuralField camZ={camZ(frame)} waveZ={waveZ(frame)} brightness={dim} pulse={pulse} roll={Math.sin(frame / 90) * 1.2} />
+      <DataStorm camZ={camZAt(frame)} speed={speedAt(frame)} tunnel={tunnel} tokens={tokens} pulse={pulse} />
 
-      <Dive />
       <Sequence from={T.tokenize.from} durationInFrames={T.tokenize.dur}>
         <Tokenize />
       </Sequence>
