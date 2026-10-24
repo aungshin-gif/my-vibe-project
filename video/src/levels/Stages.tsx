@@ -363,7 +363,7 @@ export const LayerStack: React.FC<{ dur: number }> = ({ dur }) => {
               <rect x={x} y={y} width={w} height={h} rx={26 * k} fill={col} fillOpacity={0.04 + lit * 0.12} stroke={col} strokeWidth={Math.max(1.2, 5 * k)} strokeOpacity={0.3 + lit * 0.7} style={{ filter: lit > 0.2 ? `drop-shadow(0 0 ${16 * k}px ${col})` : undefined }} />
               <rect x={x + w * 0.06} y={y + h * 0.18} width={w * 0.42} height={h * 0.64} rx={14 * k} fill={col} fillOpacity={0.08 + lit * 0.26} stroke={col} strokeOpacity={0.5} strokeWidth={Math.max(1, 2.5 * k)} />
               <rect x={x + w * 0.52} y={y + h * 0.18} width={w * 0.42} height={h * 0.64} rx={14 * k} fill={col} fillOpacity={0.08 + lit * 0.26} stroke={col} strokeOpacity={0.5} strokeWidth={Math.max(1, 2.5 * k)} />
-              {k > 0.66 && k < 1.5 && (
+              {k > 0.85 && k < 1.5 && (
                 <>
                   <text x={x + w * 0.27} y={cy + 8 * k} fill="#fff" fontSize={34 * k} fontWeight={700} fontFamily={disp} textAnchor="middle" opacity={0.9}>ATTENTION</text>
                   <text x={x + w * 0.73} y={cy + 8 * k} fill="#fff" fontSize={34 * k} fontWeight={700} fontFamily={disp} textAnchor="middle" opacity={0.9}>FEED-FORWARD</text>
