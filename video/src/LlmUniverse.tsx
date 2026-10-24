@@ -9,7 +9,7 @@ import { NextToken } from "./scenes/NextToken";
 import { PULLBACK_FROM, PULSE_FRAME, T } from "./timeline";
 import { theme } from "./theme";
 import { useF, Seq } from "./time";
-import { BlackHole } from "./BlackHole";
+import { Portal } from "./Portal";
 
 // Scenes 2-5 as one continuous camera move: dive down a ring tunnel (fast),
 // cruise through the token stream while it thinks, then pull back out.
@@ -56,7 +56,7 @@ export const Backdrop: React.FC = () => {
 };
 
 // Defaults reproduce the original 30s cut. The 45s cut uses `suck` (tokens
-// fall into the black hole instead of fading), `bhFrom` (draw the black hole)
+// fall into the portal instead of fading), `bhFrom` (draw the portal)
 // and drops the later scenes while the inserted levels play.
 export const LlmUniverse: React.FC<{ suck?: number; bhFrom?: number; showNext?: boolean; showTokenize?: boolean }> = ({ suck, bhFrom, showNext = true, showTokenize = true }) => {
   const frame = useF();
@@ -67,7 +67,7 @@ export const LlmUniverse: React.FC<{ suck?: number; bhFrom?: number; showNext?: 
     <AbsoluteFill style={{ background: theme.colors.bg }}>
       <BgMesh />
       <DataStorm camZ={camZAt(frame)} speed={speedAt(frame)} tunnel={tunnelAt(frame)} tokens={tokensAt(frame)} pulse={beatPulse(frame)} />
-      {bhFrom !== undefined && <BlackHole />}
+      {bhFrom !== undefined && <Portal />}
 
       {showTokenize && (
         <Seq from={T.tokenize.from} durationInFrames={T.tokenize.dur}>

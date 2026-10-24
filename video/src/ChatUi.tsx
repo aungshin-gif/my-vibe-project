@@ -1,4 +1,5 @@
 import React from "react";
+import { ArrowUp, Folder, LayoutGrid, MessageSquare, Plus, Search } from "lucide-react";
 import { Img, interpolate, spring, staticFile } from "remotion";
 import { clamp } from "./lib";
 import { theme } from "./theme";
@@ -17,26 +18,25 @@ const UI = {
   text: "#F1EEE8",
 };
 
+// Starburst mark: tapered rays of uneven length with rounded tips.
+const RAYS = [1, 0.74, 0.93, 0.7, 0.98, 0.78, 0.9, 0.72, 1, 0.8, 0.92, 0.7];
 const Spark: React.FC<{ size: number }> = ({ size }) => (
-  <div style={{ position: "relative", width: size, height: size, flex: "none" }}>
-    {Array.from({ length: 10 }, (_, i) => (
-      <div key={i} style={{ position: "absolute", left: "50%", top: "50%", width: size * 0.1, height: size * 0.44, background: CLAY, borderRadius: size, transformOrigin: "50% 0%", transform: `translateX(-50%) rotate(${36 * i}deg) translateY(${size * 0.06}px)` }} />
-    ))}
-  </div>
+  <svg width={size} height={size} viewBox="-50 -50 100 100" style={{ flex: "none" }}>
+    {RAYS.map((len, i) => {
+      const L = 46 * len;
+      return (
+        <path key={i} d={`M -4.2 -6 L -2.2 ${-L + 3} Q 0 ${-L - 2} 2.2 ${-L + 3} L 4.2 -6 Z`} fill={CLAY} transform={`rotate(${i * 30 + (i % 3) * 1.5})`} />
+      );
+    })}
+    <circle r={8} fill={CLAY} />
+  </svg>
 );
 
-// Simple line icons (no emoji; they would ignore the palette).
-const Icon: React.FC<{ kind: "plus" | "search" | "box" | "grid" | "chat" }> = ({ kind }) => {
-  const s = { stroke: UI.dim, strokeWidth: 2.2, fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  return (
-    <svg width={30} height={30} viewBox="0 0 24 24" style={{ flex: "none" }}>
-      {kind === "plus" && <path d="M12 5v14M5 12h14" {...s} />}
-      {kind === "search" && (<><circle cx="11" cy="11" r="6.5" {...s} /><path d="M16 16l4.5 4.5" {...s} /></>)}
-      {kind === "box" && <path d="M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8" {...s} />}
-      {kind === "grid" && <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" {...s} />}
-      {kind === "chat" && <path d="M5 6h14v10H10l-4 3v-3H5z" {...s} />}
-    </svg>
-  );
+type IconKind = "plus" | "search" | "box" | "grid" | "chat";
+const ICONS = { plus: Plus, search: Search, box: Folder, grid: LayoutGrid, chat: MessageSquare } as const;
+const Icon: React.FC<{ kind: IconKind }> = ({ kind }) => {
+  const I = ICONS[kind];
+  return <I size={30} strokeWidth={1.75} color={UI.dim} style={{ flex: "none" }} />;
 };
 
 const NAV: { icon: "plus" | "search" | "box" | "grid" | "chat"; label: string }[] = [
@@ -55,7 +55,7 @@ const Cursor: React.FC<{ frame: number }> = ({ frame }) => (
 );
 
 const Avatar: React.FC<{ size: number }> = ({ size }) => (
-  <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flex: "none", border: `2px solid ${theme.colors.cyan}88`, boxShadow: `0 0 24px ${theme.colors.cyan}44` }}>
+  <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flex: "none", border: "1.5px solid rgba(255,255,255,0.25)" }}>
     <Img src={staticFile("avatar.jpg")} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
   </div>
 );
@@ -133,12 +133,12 @@ export const ChatUi: React.FC<{ mode: ChatMode }> = ({ mode }) => {
         </div>
 
         {/* input box */}
-        <div style={{ height: 112, borderRadius: 30, display: "flex", alignItems: "center", gap: 22, padding: "0 30px", fontSize: 36, background: UI.bubble, border: `1px solid ${UI.line}`, boxShadow: `0 0 50px ${theme.colors.cyan}22` }}>
+        <div style={{ height: 112, borderRadius: 30, display: "flex", alignItems: "center", gap: 22, padding: "0 30px", fontSize: 36, background: UI.bubble, border: `1px solid ${UI.line}`, boxShadow: "0 8px 30px rgba(0,0,0,0.35)" }}>
           <Icon kind="plus" />
           <span style={{ color: inputText ? UI.text : UI.dim }}>{inputText || "Message Claude"}</span>
           {mode === "send" && frame < sendAt && <Cursor frame={frame} />}
           <div style={{ marginLeft: "auto", width: 62, height: 62, borderRadius: 18, background: CLAY, display: "flex", alignItems: "center", justifyContent: "center", transform: `scale(${interpolate(frame, [sendAt - 2, sendAt, sendAt + 6], [1, 0.86, 1], clamp)})` }}>
-            <div style={{ width: 0, height: 0, borderLeft: "11px solid transparent", borderRight: "11px solid transparent", borderBottom: "20px solid #1A0F0A" }} />
+            <ArrowUp size={34} strokeWidth={2.6} color="#1A0F0A" />
           </div>
         </div>
       </div>

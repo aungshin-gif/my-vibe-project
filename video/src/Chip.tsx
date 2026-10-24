@@ -30,10 +30,6 @@ export const Chip: React.FC<{
   const c1 = hot ? theme.colors.magenta : theme.colors.cyan;
   const c2 = hot ? theme.colors.violet : theme.colors.blue;
   const float = Math.sin(frame / 26 + seed) * 5;
-  const sweep = ((frame * 5 + seed * 97) % (w + 260)) - 130;
-  const corner = (pos: React.CSSProperties): React.ReactElement => (
-    <div style={{ position: "absolute", width: 16, height: 16, borderColor: c1, borderStyle: "solid", borderWidth: 0, ...pos }} />
-  );
 
   return (
     <div
@@ -48,56 +44,24 @@ export const Chip: React.FC<{
         transformOrigin: "50% 50%",
       }}
     >
-      {/* gradient rim + outer glow */}
       <div
         style={{
           position: "absolute",
           inset: 0,
-          borderRadius: 24,
-          padding: 2.5,
-          background: `linear-gradient(135deg, ${c1}, ${c2} 55%, ${c1})`,
-          boxShadow: `0 0 ${26 + glow * 70}px ${c1}${hex(0.25 + glow * 0.5)}, 0 22px 44px rgba(0,0,0,0.55)`,
+          borderRadius: 20,
+          overflow: "hidden",
+          background: "linear-gradient(180deg, rgba(30,36,70,0.82), rgba(10,13,30,0.92))",
+          border: "1px solid rgba(255,255,255,0.2)",
+          boxShadow: `0 14px 34px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22), 0 0 ${glow * 46}px ${c1}${hex(0.12 + glow * 0.3)}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {/* glass body */}
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            borderRadius: 21.5,
-            overflow: "hidden",
-            background: `linear-gradient(160deg, ${c2}66 0%, rgba(10,14,40,0.92) 45%, rgba(5,6,20,0.96) 100%)`,
-            boxShadow: `inset 0 0 28px ${c2}55, inset 0 -10px 20px ${c1}22`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: "46%", background: "linear-gradient(180deg, rgba(255,255,255,0.26), rgba(255,255,255,0.02))" }} />
-          <div style={{ position: "absolute", top: -10, bottom: -10, left: sweep, width: 70, transform: "skewX(-20deg)", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)" }} />
-          <span
-            style={{
-              position: "relative",
-              fontFamily: theme.fonts.display,
-              fontWeight: 650,
-              fontSize: 46,
-              letterSpacing: "-0.01em",
-              color: "#FFFFFF",
-              textShadow: `0 0 18px ${c1}, 0 2px 0 rgba(0,0,0,0.35)`,
-            }}
-          >
-            {text}
-          </span>
-        </div>
+        {/* accent hairline along the top edge */}
+        <div style={{ position: "absolute", left: 16, right: 16, top: 0, height: 2, borderRadius: 2, background: `linear-gradient(90deg, transparent, ${c1}, ${c2}, transparent)`, opacity: 0.55 + glow * 0.45 }} />
+        <span style={{ fontFamily: theme.fonts.display, fontWeight: 600, fontSize: 44, letterSpacing: "-0.01em", color: "#F4F8FF" }}>{text}</span>
       </div>
-      {/* HUD corner ticks */}
-      {corner({ left: -7, top: -7, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 8 })}
-      {corner({ right: -7, top: -7, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 8 })}
-      {corner({ left: -7, bottom: -7, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 8 })}
-      {corner({ right: -7, bottom: -7, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 8 })}
-      {/* under-glow */}
-      <div style={{ position: "absolute", left: "12%", width: "76%", bottom: -16, height: 8, borderRadius: 8, background: `linear-gradient(90deg, transparent, ${c1}, transparent)`, filter: "blur(5px)", opacity: 0.55 + glow * 0.45 }} />
     </div>
   );
 };

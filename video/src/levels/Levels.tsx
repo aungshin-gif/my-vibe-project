@@ -6,7 +6,7 @@ import { theme } from "../theme";
 import { Seq, useF } from "../time";
 import { INSERT, LEVELS_FROM, LEVELS_TO, STAGES } from "../timeline2";
 import { FrameHud, LevelRail, Title } from "./Hud";
-import { Attention, Embedding, FeedForward, LayerStack, Logits, Position } from "./Stages";
+import { Attention, Embedding, FeedForward, LayerStack, Logits, Position } from "./Stages3D";
 
 const COMPONENTS = { embed: Embedding, pos: Position, attn: Attention, ffn: FeedForward, stack: LayerStack, logits: Logits } as const;
 

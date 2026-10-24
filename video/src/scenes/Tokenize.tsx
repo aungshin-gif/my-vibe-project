@@ -19,9 +19,9 @@ const ATTN: [number, number, number][] = [
 const BEAM_FROM = 8;
 const BEAM_TO = 52;
 
-const BH = { x: 960, y: 540 }; // black hole centre
+const BH = { x: 960, y: 540 }; // portal centre
 
-// `suck`: local frame at which the tokens start falling into the black hole
+// `suck`: local frame at which the tokens start falling into the portal
 // (replaces the normal fade-out).
 export const Tokenize: React.FC<{ suck?: number }> = ({ suck }) => {
   const frame = useF();
