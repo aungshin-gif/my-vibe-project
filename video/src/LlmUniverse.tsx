@@ -9,14 +9,15 @@ import { NextToken } from "./scenes/NextToken";
 import { PULLBACK_FROM, PULSE_FRAME, T } from "./timeline";
 import { theme } from "./theme";
 import { useF, Seq } from "./time";
+import { BlackHole } from "./BlackHole";
 
 // Scenes 2-5 as one continuous camera move: dive down a ring tunnel (fast),
 // cruise through the token stream while it thinks, then pull back out.
-const speedAt = (f: number) =>
+export const speedAt = (f: number) =>
   interpolate(f, [0, 30, 110, 240, PULLBACK_FROM, PULLBACK_FROM + 24, T.total], [74, 64, 18, 12, 8, -58, -84], clamp);
 
 // Integrates speed per design frame; the fractional part keeps it smooth at 90fps.
-const camZAt = (f: number) => {
+export const camZAt = (f: number) => {
   const whole = Math.floor(f);
   let z = 0;
   for (let g = 0; g < whole; g++) z += speedAt(g);
@@ -36,28 +37,49 @@ const ReadyPulse: React.FC = () => {
   );
 };
 
-export const LlmUniverse: React.FC = () => {
+// tunnel is bold on entry and exit, subtle while thinking; token rain peaks mid-scene
+export const tunnelAt = (f: number) => interpolate(f, [0, 120, 200, 540, 590, T.total], [1, 1, 0.42, 0.42, 0.9, 1], clamp);
+export const tokensAt = (f: number) => interpolate(f, [0, 70, 150, 540, 600, T.total], [0.3, 0.7, 1, 1, 0.5, 0.25], clamp);
+
+// Mesh + tunnel/token rain with grade, grain and vignette: the base of every
+// frame of this scene. Exported so the inserted levels can dissolve back into
+// exactly this look.
+export const Backdrop: React.FC = () => {
   const frame = useF();
-  const pulse = beatPulse(frame);
+  return (
+    <AbsoluteFill style={{ background: theme.colors.bg }}>
+      <BgMesh />
+      <DataStorm camZ={camZAt(frame)} speed={speedAt(frame)} tunnel={tunnelAt(frame)} tokens={tokensAt(frame)} pulse={beatPulse(frame)} />
+      <Finish />
+    </AbsoluteFill>
+  );
+};
+
+// Defaults reproduce the original 30s cut. The 45s cut uses `suck` (tokens
+// fall into the black hole instead of fading), `bhFrom` (draw the black hole)
+// and drops the later scenes while the inserted levels play.
+export const LlmUniverse: React.FC<{ suck?: number; bhFrom?: number; showNext?: boolean; showTokenize?: boolean }> = ({ suck, bhFrom, showNext = true, showTokenize = true }) => {
+  const frame = useF();
   const open = interpolate(frame, [0, 22], [1, 0], clamp);
   const wash = interpolate(frame, [T.total - 18, T.total - 1], [0, 1], { easing: theme.ease.in, ...clamp });
-
-  // tunnel is bold on entry and exit, subtle while thinking; token rain peaks mid-scene
-  const tunnel = interpolate(frame, [0, 120, 200, 540, 590, T.total], [1, 1, 0.42, 0.42, 0.9, 1], clamp);
-  const tokens = interpolate(frame, [0, 70, 150, 540, 600, T.total], [0.3, 0.7, 1, 1, 0.5, 0.25], clamp);
 
   return (
     <AbsoluteFill style={{ background: theme.colors.bg }}>
       <BgMesh />
-      <DataStorm camZ={camZAt(frame)} speed={speedAt(frame)} tunnel={tunnel} tokens={tokens} pulse={pulse} />
+      <DataStorm camZ={camZAt(frame)} speed={speedAt(frame)} tunnel={tunnelAt(frame)} tokens={tokensAt(frame)} pulse={beatPulse(frame)} />
+      {bhFrom !== undefined && <BlackHole />}
 
-      <Seq from={T.tokenize.from} durationInFrames={T.tokenize.dur}>
-        <Tokenize />
-      </Seq>
-      <Seq from={T.next.from} durationInFrames={T.next.dur}>
-        <NextToken />
-      </Seq>
-      <Rail />
+      {showTokenize && (
+        <Seq from={T.tokenize.from} durationInFrames={T.tokenize.dur}>
+          <Tokenize suck={suck} />
+        </Seq>
+      )}
+      {showNext && (
+        <Seq from={T.next.from} durationInFrames={T.next.dur}>
+          <NextToken />
+        </Seq>
+      )}
+      {showNext && <Rail />}
       <ReadyPulse />
 
       <Finish />

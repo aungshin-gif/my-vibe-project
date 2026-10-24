@@ -21,7 +21,9 @@ export const Chip: React.FC<{
   scale?: number;
   tilt?: number; // degrees around Y
   seed?: number;
-}> = ({ text, x, y, p, glow = 0.3, hot = false, scale = 1, tilt = 0, seed = 0 }) => {
+  rotate?: number; // degrees in the screen plane
+  stretch?: number; // extra X stretch (spaghettification near the black hole)
+}> = ({ text, x, y, p, glow = 0.3, hot = false, scale = 1, tilt = 0, seed = 0, rotate = 0, stretch = 1 }) => {
   const frame = useF();
   if (p <= 0.001) return null;
   const w = chipW(text);
@@ -42,7 +44,7 @@ export const Chip: React.FC<{
         width: w,
         height: CHIP_H,
         opacity: Math.min(1, p),
-        transform: `perspective(900px) rotateX(-6deg) rotateY(${tilt}deg) scale(${(0.8 + 0.2 * Math.min(1.08, p)) * scale})`,
+        transform: `perspective(900px) rotateX(-6deg) rotateY(${tilt}deg) rotate(${rotate}deg) scaleX(${stretch}) scale(${(0.8 + 0.2 * Math.min(1.08, p)) * scale})`,
         transformOrigin: "50% 50%",
       }}
     >

@@ -19,7 +19,11 @@ const ATTN: [number, number, number][] = [
 const BEAM_FROM = 8;
 const BEAM_TO = 52;
 
-export const Tokenize: React.FC = () => {
+const BH = { x: 960, y: 540 }; // black hole centre
+
+// `suck`: local frame at which the tokens start falling into the black hole
+// (replaces the normal fade-out).
+export const Tokenize: React.FC<{ suck?: number }> = ({ suck }) => {
   const frame = useF();
   const fps = DESIGN_FPS;
   const dur = T.tokenize.dur;
@@ -40,7 +44,11 @@ export const Tokenize: React.FC = () => {
   // once the beam has passed, the blocks pop out one by one
   const passFrame = (i: number) => BEAM_TO - 8 + i * 5;
 
-  const exit = interpolate(frame, [dur - 14, dur - 2], [0, 1], { easing: theme.ease.in, ...clamp });
+  const exit = suck === undefined ? interpolate(frame, [dur - 14, dur - 2], [0, 1], { easing: theme.ease.in, ...clamp }) : 0;
+  // per-token fall progress, staggered so they stream in one after another
+  const fall = (i: number) =>
+    suck === undefined ? 0 : theme.ease.in(Math.min(1, Math.max(0, (frame - suck - i * 5) / 46)));
+  const extras = suck === undefined ? 1 : interpolate(frame, [suck, suck + 14], [1, 0], clamp);
 
   return (
     <div style={{ position: "absolute", inset: 0, opacity: 1 - exit, transform: `translateY(${-exit * 60}px) scale(${1 + exit * 0.1})` }}>
@@ -50,7 +58,7 @@ export const Tokenize: React.FC = () => {
       </div>
       <div style={{ position: "absolute", left: beamX - 3, top: 330, width: 6, height: 420, opacity: beamO, background: `linear-gradient(180deg, transparent, ${theme.colors.cyan}, #fff, ${theme.colors.magenta}, transparent)`, boxShadow: `0 0 60px 10px ${theme.colors.cyan}` }} />
 
-      <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }}>
+      <svg width={1920} height={1080} style={{ position: "absolute", inset: 0, opacity: extras }}>
         <defs>
           <linearGradient id="attn" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0" stopColor={theme.colors.cyan} />
@@ -81,9 +89,32 @@ export const Tokenize: React.FC = () => {
         const barP = spring({ frame: frame - passFrame(i) - 10, fps, config: theme.spring.smooth });
         return (
           <React.Fragment key={t + i}>
-            <Chip text={t} x={xs[i]} y={y} p={p} glow={0.5} hot={i % 2 === 1} seed={i} tilt={(xs[i] - 960) / 90} />
+            {(() => {
+              const f = fall(i);
+              // spiral toward the horizon: radius shrinks, angle winds up, chip stretches
+              const dx = xs[i] - BH.x;
+              const dy = y - BH.y;
+              const r0 = Math.hypot(dx, dy);
+              const a = Math.atan2(dy, dx) + f * 2.4 * Math.PI;
+              const r = r0 * Math.pow(1 - f, 1.5);
+              return (
+                <Chip
+                  text={t}
+                  x={BH.x + Math.cos(a) * r}
+                  y={BH.y + Math.sin(a) * r}
+                  p={p * (1 - Math.pow(f, 4))}
+                  glow={0.5 + f}
+                  hot={i % 2 === 1}
+                  seed={i}
+                  tilt={(xs[i] - 960) / 90}
+                  rotate={f * ((a * 180) / Math.PI + 90)}
+                  stretch={1 + 2.4 * Math.pow(f, 1.5)}
+                  scale={Math.pow(1 - f, 0.9)}
+                />
+              );
+            })()}
             {/* contextual embedding: a short bar profile under each token */}
-            <div style={{ position: "absolute", left: xs[i] - 60, top: 630, width: 120, height: 80, display: "flex", alignItems: "flex-end", gap: 7 }}>
+            <div style={{ position: "absolute", left: xs[i] - 60, top: 630, width: 120, height: 80, display: "flex", alignItems: "flex-end", gap: 7, opacity: extras }}>
               {Array.from({ length: 8 }, (_, k) => {
                 const h = (0.25 + 0.75 * Math.abs(Math.sin((i + 1) * 1.7 + k * 0.9 + frame / 40))) * 80 * barP;
                 return <div key={k} style={{ width: 9, height: h, borderRadius: 5, background: `linear-gradient(180deg, ${theme.colors.cyan}, ${theme.colors.violet})`, opacity: 0.9, boxShadow: `0 0 10px ${theme.colors.cyan}88` }} />;
