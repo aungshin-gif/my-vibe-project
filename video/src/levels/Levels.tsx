@@ -1,27 +1,11 @@
 import React from "react";
-import { AbsoluteFill, interpolate } from "remotion";
+import { AbsoluteFill, interpolate, OffthreadVideo, staticFile } from "remotion";
 import { Backdrop } from "../LlmUniverse";
-import { BgMesh, clamp, Finish } from "../lib";
+import { clamp, Finish } from "../lib";
 import { theme } from "../theme";
 import { Seq, useF } from "../time";
-import { INSERT, LEVELS_FROM, LEVELS_TO, STAGES } from "../timeline2";
+import { INSERT, LEVELS_FROM, LEVELS_TO } from "../timeline2";
 import { FrameHud, LevelRail, Title } from "./Hud";
-import { Attention, Embedding, FeedForward, LayerStack, Logits, Position } from "./Stages3D";
-
-const COMPONENTS = { embed: Embedding, pos: Position, attn: Attention, ffn: FeedForward, stack: LayerStack, logits: Logits } as const;
-
-// Quiet blueprint backdrop: mesh glow, fine grid and a slow scan line.
-const LevelsBackdrop: React.FC = () => {
-  const f = useF();
-  const scan = ((f * 5) % 1300) - 110;
-  return (
-    <AbsoluteFill style={{ background: theme.colors.bg }}>
-      <BgMesh hue={1} />
-      <AbsoluteFill style={{ backgroundImage: "linear-gradient(rgba(80,180,255,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(80,180,255,0.07) 1px, transparent 1px)", backgroundSize: "96px 96px", opacity: 0.8 }} />
-      <div style={{ position: "absolute", left: 0, right: 0, top: scan, height: 120, background: "linear-gradient(180deg, transparent, rgba(34,225,255,0.07), transparent)" }} />
-    </AbsoluteFill>
-  );
-};
 
 const Fader: React.FC<{ o: number; children: React.ReactNode }> = ({ o, children }) => <AbsoluteFill style={{ opacity: o }}>{children}</AbsoluteFill>;
 
@@ -39,8 +23,9 @@ export const LevelsScene: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ background: "#000" }}>
+      {/* one continuous 3D flight (pre-rendered with three.js, see scripts/river) */}
       <Fader o={1 - toOld}>
-        <LevelsBackdrop />
+        <OffthreadVideo src={staticFile("river90.mp4")} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </Fader>
       {/* inner frame = f - INSERT, so this is exactly the old scene's backdrop */}
       <Seq from={END_FROM}>
@@ -51,14 +36,6 @@ export const LevelsScene: React.FC = () => {
         </Seq>
       </Seq>
       <Fader o={content}>
-        {STAGES.map((st) => {
-          const Comp = COMPONENTS[st.id];
-          return (
-            <Seq key={st.id} from={st.from - LEVELS_FROM} durationInFrames={st.to - st.from}>
-              <Comp dur={st.to - st.from} />
-            </Seq>
-          );
-        })}
         <FrameHud f={f} />
         <LevelRail f={f} />
         <Title f={f} />

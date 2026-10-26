@@ -147,10 +147,10 @@ export const Title: React.FC<{ f: number }> = ({ f }) => {
   const layer = layerAt(f);
   return (
     <>
-      <div style={{ position: "absolute", left: 560, right: 560, top: 96, textAlign: "center", opacity: p * (1 - out), transform: `translateY(${(1 - p) * -22}px)` }}>
+      <div style={{ position: "absolute", left: 96, width: 520, top: 84, textAlign: "left", opacity: p * (1 - out), transform: `translateY(${(1 - p) * -22}px)` }}>
         <div style={{ fontFamily: theme.fonts.mono, fontSize: 24, letterSpacing: "0.3em", color: C.cyan }}>{`LEVEL ${pad(idx + 1)} / ${pad(STAGES.length)}`}</div>
-        <div style={{ fontFamily: theme.fonts.display, fontWeight: 700, fontSize: 68, letterSpacing: "-0.02em", color: "#fff", textShadow: `0 0 36px ${C.cyan}88`, marginTop: 6 }}>{st.name}</div>
-        <div style={{ fontFamily: theme.fonts.display, fontWeight: 500, fontSize: 28, color: C.textDim, marginTop: 4 }}>{st.sub}</div>
+        <div style={{ fontFamily: theme.fonts.display, fontWeight: 700, fontSize: 60, letterSpacing: "-0.02em", color: "#fff", textShadow: `0 0 36px ${C.cyan}88`, marginTop: 6 }}>{st.name}</div>
+        <div style={{ fontFamily: theme.fonts.display, fontWeight: 500, fontSize: 26, lineHeight: 1.25, color: C.textDim, marginTop: 6 }}>{st.sub}</div>
       </div>
       {showLayer && (
         <div style={{ position: "absolute", right: 120, top: 112, textAlign: "right", fontFamily: theme.fonts.mono }}>

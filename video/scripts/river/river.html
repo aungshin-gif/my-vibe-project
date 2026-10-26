@@ -1,0 +1,111 @@
+<!doctype html><html><body style="margin:0;background:#04050c;overflow:hidden">
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+const W=+new URLSearchParams(location.search).get('w')||1920,H=Math.round(W*9/16);
+const DUR=10;
+const r=new THREE.WebGLRenderer({antialias:false,preserveDrawingBuffer:true});
+r.setPixelRatio(1);r.setSize(W,H);r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.0;
+document.body.appendChild(r.domElement);
+const s=new THREE.Scene();s.background=new THREE.Color(0x04050c);s.fog=new THREE.FogExp2(0x04050c,0.05);
+s.add(new THREE.HemisphereLight(0x7fc8ff,0x2a1060,1.6));
+const k1=new THREE.DirectionalLight(0xffffff,2.4);k1.position.set(3,5,4);s.add(k1);
+const k2=new THREE.DirectionalLight(0xb06bff,2.4);k2.position.set(-4,1,-3);s.add(k2);
+const cam=new THREE.PerspectiveCamera(38,W/H,0.02,100);
+const rt=new THREE.WebGLRenderTarget(W,H,{type:THREE.HalfFloatType,samples:4});
+const comp=new EffectComposer(r,rt);comp.addPass(new RenderPass(s,cam));
+const bloom=new UnrealBloomPass(new THREE.Vector2(W,H),0.85,0.7,0.12);comp.addPass(bloom);comp.addPass(new OutputPass());
+
+const RING_Y=[0.44,0.27,0.10,-0.07,-0.24,-0.42];
+const NAMES=['Embedding','Position','Self-attention','Feed-forward','Layer stack','Output logits'];
+const rings=RING_Y.map((y,i)=>{const m=new THREE.Mesh(new THREE.TorusGeometry(0.40,0.012,12,160),new THREE.MeshBasicMaterial({color:new THREE.Color().setHSL(0.52+i*0.05,1,0.6),transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));m.rotation.x=Math.PI/2;m.position.y=y;s.add(m);return m});
+const core=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.05,24,1,true),new THREE.MeshBasicMaterial({color:0x6fe6ff,transparent:true,opacity:0.25,blending:THREE.AdditiveBlending,depthWrite:false}));s.add(core);
+
+// token river
+const N=6000;const pos=new Float32Array(N*3),col=new Float32Array(N*3);
+const rnd=(()=>{let a=12345;return()=>{a=(a*1664525+1013904223)>>>0;return a/4294967296}})();
+const P=Array.from({length:N},()=>({u:rnd(),a:rnd()*6.283,j:rnd(),k:rnd(),sp:0.8+rnd()*0.4}));
+const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+const sp=document.createElement('canvas');sp.width=sp.height=64;{const g=sp.getContext('2d');const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(0.35,'rgba(255,255,255,0.55)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0,0,64,64)}
+const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:0.03,map:new THREE.CanvasTexture(sp),vertexColors:true,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,sizeAttenuation:true}));s.add(pts);
+const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
+const mix=(a,b,t)=>a+(b-a)*t;
+function updateParticles(t){
+ const tmp=new THREE.Color();
+ for(let i=0;i<N;i++){const p=P[i];
+  const q=((p.u+t*0.075*p.sp)%1+1)%1;
+  let x,y,z,br=1,hue;
+  if(q<0.38){const e=q/0.38;const ee=1-Math.pow(1-e,2);
+   const R=mix(7.0,0.10+p.k*0.25,ee);const ang=p.a+ee*7.5;
+   x=Math.cos(ang)*R;z=Math.sin(ang)*R;y=mix(0.8+p.j*3.4,0.56,ee)+Math.sin(ang*2+p.j*6)*0.15*(1-ee);
+   br=sm(0,0.08,e);hue=mix(0.55,0.58,e)}
+  else if(q<0.78){const e=(q-0.38)/0.40;const R=0.03+p.k*0.07;const ang=p.a+e*(9+p.j*5);
+   x=Math.cos(ang)*R;z=Math.sin(ang)*R;y=mix(0.56,-0.5,e);br=0.9;hue=mix(0.58,0.74,e)}
+  else{const e=(q-0.78)/0.22;const R=mix(0.06,0.2+p.k*1.6,e);const ang=p.a+e*3;
+   x=Math.cos(ang)*R;z=Math.sin(ang)*R;y=mix(-0.5,-1.5-p.j*0.4,e*e);br=1-sm(0.55,1,e);hue=mix(0.74,0.88,e)}
+  pos[i*3]=x;pos[i*3+1]=y;pos[i*3+2]=z;tmp.setHSL(hue,1,0.58);col[i*3]=tmp.r*br;col[i*3+1]=tmp.g*br;col[i*3+2]=tmp.b*br}
+ geo.attributes.position.needsUpdate=true;geo.attributes.color.needsUpdate=true}
+
+// ---------- extra per-stage geometry ----------
+// attention arcs: random particle pairs joined by lines inside the attention band
+const NA=70;const apos=new Float32Array(NA*6);const ageo=new THREE.BufferGeometry();ageo.setAttribute('position',new THREE.BufferAttribute(apos,3));
+const alines=new THREE.LineSegments(ageo,new THREE.LineBasicMaterial({color:0x9be9ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));s.add(alines);
+const PAIR=Array.from({length:NA},()=>[Math.floor(rnd()*N),Math.floor(rnd()*N)]);
+// logits bars
+const NB=28;const bars=[];const barG=new THREE.BoxGeometry(0.028,1,0.028);
+for(let i=0;i<NB;i++){const a=i/NB*6.2832;const m=new THREE.Mesh(barG,new THREE.MeshBasicMaterial({color:new THREE.Color().setHSL(0.78+0.1*(i%3)/3,1,0.62),transparent:true,opacity:0.9,blending:THREE.AdditiveBlending,depthWrite:false}));m.position.set(Math.cos(a)*0.62,-0.62,Math.sin(a)*0.62);m.scale.y=0.001;s.add(m);bars.push(m)}
+const WIN=Math.floor(NB*0.3);
+const BH=bars.map((_,i)=>0.05+0.25*(0.5+0.5*Math.sin(i*2.3+1.1))*(0.6+0.4*Math.cos(i*0.9)));BH[WIN]=0.72;
+// layer micro-rings (stack)
+const micro=Array.from({length:24},(_,i)=>{const m=new THREE.Mesh(new THREE.TorusGeometry(0.30,0.004,6,96),new THREE.MeshBasicMaterial({color:0x6fe6ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));m.rotation.x=Math.PI/2;m.position.y=-0.17-i*0.0055*3.5;s.add(m);return m});
+
+// ---------- timeline in design frames (30fps), local to the levels scene ----------
+const B=[0,150,270,440,570,700,836],TOTAL=836;
+const MID=B.slice(0,6).map((b,i)=>(b+B[i+1])/2);
+const stageOf=F=>{for(let i=0;i<6;i++)if(F>=B[i]&&F<B[i+1])return i;return F<0?0:5};
+const hud=null;
+function frame(F){
+ const t=F/30;
+ updateParticles(t*1.0+3);
+ // shape the conduit per stage: widen for embedding (vectors), twist for position, flare for ffn
+ for(let i=0;i<N;i++){const y=pos[i*3+1];
+  if(y<0.56&&y>-0.5){const x=pos[i*3],z=pos[i*3+2];const rr=Math.hypot(x,z)||1e-4;const ang=Math.atan2(z,x);let k=1;
+   const eE=Math.exp(-Math.pow((y-0.46)/0.07,2));const eP=Math.exp(-Math.pow((y-0.27)/0.07,2));const eF=Math.exp(-Math.pow((y+0.07)/0.09,2));
+   k+=eE*6+eP*3*(0.6+0.4*Math.sin(F*0.08+y*30))+eF*(5+3*Math.sin(F*0.05));
+   const nr=rr*k;pos[i*3]=Math.cos(ang)*nr;pos[i*3+2]=Math.sin(ang)*nr}}
+ geo.attributes.position.needsUpdate=true;
+ // rings
+ rings.forEach((m,i)=>{const a=B[i],b=B[i+1];const on=sm(a-6,a+8,F)*(1-sm(b+18,b+50,F)*0.55);const pulse=sm(a,a+10,F)*(1-sm(a+15,b,F));
+  m.material.opacity=0.12+0.55*on+0.9*pulse;m.scale.setScalar(1+0.06*pulse);m.rotation.z=F/30*(0.5+i*0.12)*(i%2?-1:1)});
+ core.material.opacity=0.14+0.4*sm(0,80,F);
+ // attention arcs
+ const aon=sm(B[2]-4,B[2]+14,F)*(1-sm(B[3]-14,B[3]+4,F));alines.material.opacity=0.85*aon;
+ for(let k=0;k<NA;k++){const [i,j]=PAIR[k];const yi=pos[i*3+1],yj=pos[j*3+1];const ok=yi<0.28&&yi>0.0&&yj<0.28&&yj>0.0?1:0;
+  for(let c=0;c<3;c++){apos[k*6+c]=ok?pos[i*3+c]:0;apos[k*6+3+c]=ok?pos[j*3+c]:0}}
+ ageo.attributes.position.needsUpdate=true;
+ // logits bars
+ const lg=sm(B[5]+10,B[5]+70,F);const win=sm(B[5]+80,B[5]+120,F);
+ bars.forEach((m,i)=>{const h=BH[i]*lg*(i===WIN?(0.4+0.6*win):(1-0.45*win));m.scale.y=Math.max(0.001,h);m.position.y=-0.62+h/2;m.material.opacity=(i===WIN?0.6+0.4*win:0.55)});
+ // layer micro rings
+ const sw=[B[4],B[5]];micro.forEach((m,i)=>{const a=sw[0]+(sw[1]-sw[0])*i/24*0.9;m.material.opacity=0.8*sm(a,a+6,F)*(0.3+0.7*(1-sm(a+6,a+40,F)))*sm(B[4]-30,B[4],F)});
+ // camera
+ const fall=Math.min(1,Math.max(0,F/TOTAL));
+ const RY=[0.44,0.27,0.10,-0.07,-0.24,-0.46];
+ const ly0=(()=>{if(F<=MID[0])return mix(0.45,RY[0],sm(0,MID[0],F));for(let i=0;i<5;i++)if(F<=MID[i+1])return mix(RY[i],RY[i+1],sm(MID[i],MID[i+1],F));return RY[5]})();
+ const pull=sm(TOTAL-70,TOTAL,F);
+ const az=mix(0.3,0.3+6.283*0.62,sm(0,TOTAL,F))+Math.sin(F*0.01)*0.05;
+ let dist=mix(6.0,2.0,sm(0,70,F));dist+= (sm(B[2]-10,B[2]+30,F)*(1-sm(B[3]-30,B[3],F)))*0.5+ (sm(B[5],B[5]+40,F))*0.35;dist=mix(dist,5.4,pull);
+ const ly=ly0+pull*0.25;const el=mix(0.35,0.1,sm(0,160,F))+pull*0.12;
+ cam.position.set(Math.sin(az)*Math.cos(el)*dist,ly+Math.sin(el)*dist,Math.cos(az)*Math.cos(el)*dist);cam.lookAt(0,ly,0);
+ comp.render()}
+window.ready=false;
+new GLTFLoader().load('core.glb',g=>{const m=g.scene;const box=new THREE.Box3().setFromObject(m);const c=box.getCenter(new THREE.Vector3());const sz=box.getSize(new THREE.Vector3());
+ m.position.sub(c);const k=1/Math.max(sz.x,sz.y,sz.z);m.scale.setScalar(k);m.position.multiplyScalar(k);
+ m.traverse(o=>{if(o.isMesh){o.material.emissive=new THREE.Color(0x1a4a66);o.material.emissiveIntensity=0.5;if(o.material.map)o.material.emissiveMap=o.material.map}});
+ s.add(m);window.frame=F=>{frame(F);return r.domElement.toDataURL('image/jpeg',0.94)};window.ready=true});
+</script></body></html>
