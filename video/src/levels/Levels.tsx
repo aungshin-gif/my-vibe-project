@@ -6,6 +6,7 @@ import { theme } from "../theme";
 import { Seq, useF } from "../time";
 import { INSERT, LEVELS_FROM, LEVELS_TO } from "../timeline2";
 import { FrameHud, LevelRail, Title } from "./Hud";
+import { StagePanel } from "./Panels";
 
 const Fader: React.FC<{ o: number; children: React.ReactNode }> = ({ o, children }) => <AbsoluteFill style={{ opacity: o }}>{children}</AbsoluteFill>;
 
@@ -25,7 +26,10 @@ export const LevelsScene: React.FC = () => {
     <AbsoluteFill style={{ background: "#000" }}>
       {/* one continuous 3D flight (pre-rendered with three.js, see scripts/river) */}
       <Fader o={1 - toOld}>
-        <OffthreadVideo src={staticFile("river90.mp4")} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <AbsoluteFill style={{ background: "#04050c" }} />
+        <div style={{ position: "absolute", left: 1010, top: 215, width: 1152 * 0.9, height: 648 * 0.9 * 1.0, WebkitMaskImage: "radial-gradient(ellipse at center, #000 52%, transparent 78%)", maskImage: "radial-gradient(ellipse at center, #000 52%, transparent 78%)" }}>
+          <OffthreadVideo src={staticFile("river90.mp4")} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
       </Fader>
       {/* inner frame = f - INSERT, so this is exactly the old scene's backdrop */}
       <Seq from={END_FROM}>
@@ -39,6 +43,7 @@ export const LevelsScene: React.FC = () => {
         <FrameHud f={f} />
         <LevelRail f={f} />
         <Title f={f} />
+        <StagePanel f={f} />
         <Finish />
       </Fader>
       <AbsoluteFill style={{ background: `radial-gradient(circle, #FFFFFF, ${theme.colors.cyan})`, opacity: emerge * 0.95 }} />
