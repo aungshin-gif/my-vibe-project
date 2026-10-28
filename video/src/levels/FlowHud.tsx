@@ -4,6 +4,7 @@ import { clamp } from "../lib";
 import { theme } from "../theme";
 import { DESIGN_FPS, useF } from "../time";
 import { LAYERS, STAGES } from "../timeline2";
+import { FlowLabels } from "./FlowLabels";
 
 const C = theme.colors;
 const pad = (n: number) => String(Math.round(n)).padStart(2, "0");
@@ -24,10 +25,11 @@ export const FlowHud: React.FC<{ f: number }> = ({ f }) => {
   const layer = idx === 4 ? Math.max(1, Math.round(interpolate(local, [10, dur - 30], [1, LAYERS], { ...clamp }))) : idx > 4 ? LAYERS : 0;
   return (
     <>
+      <FlowLabels />
       <div style={{ position: "absolute", left: 96, top: 84, opacity: p * (1 - out), transform: `translateY(${(1 - p) * -16}px)` }}>
-        <div style={{ fontFamily: theme.fonts.mono, fontSize: 22, letterSpacing: "0.3em", color: C.cyan }}>{`${pad(idx + 1)} / ${pad(STAGES.length)}`}</div>
-        <div style={{ fontFamily: theme.fonts.display, fontWeight: 700, fontSize: 58, letterSpacing: "-0.02em", color: "#fff", textShadow: `0 0 34px ${C.cyan}88`, marginTop: 4 }}>{st.name}</div>
-        <div style={{ fontFamily: theme.fonts.display, fontWeight: 500, fontSize: 26, color: C.textDim, marginTop: 4, maxWidth: 560 }}>{st.sub}</div>
+        <div style={{ fontFamily: theme.fonts.mono, fontSize: 26, letterSpacing: "0.3em", color: C.cyan }}>{`${pad(idx + 1)} / ${pad(STAGES.length)}`}</div>
+        <div style={{ fontFamily: theme.fonts.display, fontWeight: 700, fontSize: 72, letterSpacing: "-0.02em", color: "#fff", textShadow: `0 0 34px ${C.cyan}88`, marginTop: 4 }}>{st.name}</div>
+        <div style={{ fontFamily: theme.fonts.display, fontWeight: 500, fontSize: 31, color: C.textDim, marginTop: 6, maxWidth: 640 }}>{st.sub}</div>
       </div>
       {layer > 0 && (
         <div style={{ position: "absolute", right: 110, top: 96, textAlign: "right", fontFamily: theme.fonts.mono }}>
@@ -47,7 +49,7 @@ export const FlowHud: React.FC<{ f: number }> = ({ f }) => {
           return <div key={s.id} style={{ position: "absolute", left: `${x}%`, top: -5, width: 3, height: 13, borderRadius: 2, background: on ? C.cyan : "rgba(255,255,255,0.25)" }} />;
         })}
       </div>
-      <div style={{ position: "absolute", left: 96, bottom: 80, fontFamily: theme.fonts.mono, fontSize: 15, letterSpacing: "0.2em", color: C.textDim, opacity: 0.8 }}>{`T ${(frame / DESIGN_FPS).toFixed(1).padStart(4, "0")}s`}</div>
+      <div style={{ position: "absolute", left: 96, bottom: 80, fontFamily: theme.fonts.mono, fontSize: 19, letterSpacing: "0.2em", color: C.textDim, opacity: 0.8 }}>{`T ${(frame / DESIGN_FPS).toFixed(1).padStart(4, "0")}s`}</div>
     </>
   );
 };
