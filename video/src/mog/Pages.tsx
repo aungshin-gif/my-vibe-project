@@ -2,7 +2,8 @@ import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
 import { KD, pulse } from "./beats";
 import { Confetti, CornerClaude, ORANGE, Ring, ease, hit, useT } from "./common";
-import { franklin, mono, serif } from "./fonts";
+import { franklin, mono, playfair, serif } from "./fonts";
+import { Paper } from "./common";
 import { ROWS } from "./data";
 
 // Fast back half: seven short pages, each 3-5 kicks long, every cut on a kick of the drop.
@@ -208,28 +209,181 @@ export const NamesPage: React.FC = () => {
   );
 };
 
-// rapid-fire montage: six pages, one kick (0.4 s) each, hard cuts
-type Flash = { bg: string; fg: string; small: string; big: string; sub: string; mono?: boolean };
-const FLASHES: Flash[] = [
-  { bg: BG, fg: TEXT, small: "OVERALL · #1", big: "85.7", sub: "Claude Fable 5.1" },
-  { bg: "#D97757", fg: "#fff", small: "CODING · #1", big: "97.7", sub: "Claude Fable 5.1" },
-  { bg: "#1F1D1A", fg: "#F3EADB", small: "DESIGN · #1", big: "86.9", sub: "Claude Opus 5.5" },
-  { bg: "#F3F1EA", fg: TEXT, small: "ONE LINE", big: "claude.messages.create()", sub: "ship it", mono: true },
-  { bg: "#E4F1E6", fg: GREEN, small: "ALL GREEN", big: "1,284 ✓", sub: "tests passed" },
-  { bg: BG, fg: "#A8442A", small: "THE REST", big: "Claude", sub: "pulls ahead" },
+// ---------- rapid-fire montage: six one-kick pages that are already moving when they cut in ----------
+type V3 = [number, number, number];
+const rot = ([x, y, z]: V3, ax: number, ay: number): V3 => {
+  const c1 = Math.cos(ay), s1 = Math.sin(ay), c2 = Math.cos(ax), s2 = Math.sin(ax);
+  const x1 = x * c1 + z * s1, z1 = -x * s1 + z * c1;
+  return [x1, y * c2 - z1 * s2, y * s2 + z1 * c2];
+};
+const proj = (v: V3, cx: number, cy: number, sc: number): [number, number] => {
+  const d = 4 / (4 + v[2] * 0.0 + (v[2] / 220));
+  return [cx + v[0] * sc * d, cy + v[1] * sc * d];
+};
+
+// 3D torus mesh drawn edge by edge
+const Torus: React.FC<{ u: number; cx: number; cy: number }> = ({ u, cx, cy }) => {
+  const U = 28, V = 14, R = 1.1, r = 0.45;
+  const pts: [number, number, number][][] = [];
+  for (let i = 0; i < U; i++) {
+    const row: [number, number, number][] = [];
+    for (let j = 0; j < V; j++) {
+      const a = (i / U) * Math.PI * 2, b = (j / V) * Math.PI * 2;
+      row.push(rot([(R + r * Math.cos(b)) * Math.cos(a), r * Math.sin(b), (R + r * Math.cos(b)) * Math.sin(a)], 0.9 + u * 0.8, u * 2.2));
+    }
+    pts.push(row);
+  }
+  const lines: React.ReactNode[] = [];
+  const total = U * V;
+  for (let i = 0; i < U; i++)
+    for (let j = 0; j < V; j++) {
+      const idx = i * V + j;
+      if (idx / total > Math.min(1, u * 3.2)) continue;
+      const a = proj(pts[i][j], cx, cy, 235), b = proj(pts[(i + 1) % U][j], cx, cy, 235), c = proj(pts[i][(j + 1) % V], cx, cy, 235);
+      const depth = (pts[i][j][2] + 1.6) / 3.2;
+      const col = `rgba(217,119,87,${0.35 + 0.65 * depth})`;
+      lines.push(<path key={idx} d={`M${a[0]} ${a[1]} L${b[0]} ${b[1]} M${a[0]} ${a[1]} L${c[0]} ${c[1]}`} stroke={col} strokeWidth={2.2} fill="none" />);
+    }
+  return <svg width={1920} height={1080} style={{ position: "absolute", left: 0, top: 0 }}>{lines}</svg>;
+};
+// 3D wave surface
+const Surface: React.FC<{ u: number; cx: number; cy: number }> = ({ u, cx, cy }) => {
+  const N = 26;
+  const P: [number, number][][] = [];
+  for (let i = 0; i < N; i++) {
+    P.push([]);
+    for (let j = 0; j < N; j++) {
+      const x = (i - N / 2) / (N / 2) * 1.7, z = (j - N / 2) / (N / 2) * 1.7;
+      const h = 0.35 * Math.sin(x * 3 + u * 9) * Math.cos(z * 3 - u * 7) * Math.min(1, u * 4);
+      P[i].push(proj(rot([x, h, z], 0.95, 0.5 + u * 0.9), cx, cy + 20, 165));
+    }
+  }
+  const lines: React.ReactNode[] = [];
+  for (let i = 0; i < N; i++)
+    for (let j = 0; j < N; j++) {
+      if (i < N - 1) lines.push(<line key={`a${i}-${j}`} x1={P[i][j][0]} y1={P[i][j][1]} x2={P[i + 1][j][0]} y2={P[i + 1][j][1]} stroke="#2B2A27" strokeOpacity={0.55} strokeWidth={2} />);
+      if (j < N - 1) lines.push(<line key={`b${i}-${j}`} x1={P[i][j][0]} y1={P[i][j][1]} x2={P[i][j + 1][0]} y2={P[i][j + 1][1]} stroke={ORANGE} strokeOpacity={0.8} strokeWidth={2} />);
+    }
+  return <svg width={1920} height={1080} style={{ position: "absolute", left: 0, top: 0 }}>{lines}</svg>;
+};
+
+const Win: React.FC<{ title: string; sub?: string; dark?: boolean; children: React.ReactNode; k: number }> = ({ title, sub, dark, children, k }) => (
+  <div style={{ position: "absolute", left: 140, top: 110, width: 1640, height: 860, borderRadius: 28, background: dark ? "#1F1D1A" : "#fff", border: dark ? "none" : `1px solid ${LINE}`, boxShadow: "0 24px 80px rgba(60,50,30,0.18)", overflow: "hidden", transform: `scale(${0.94 + 0.06 * Math.min(1, k)})` }}>
+    <div style={{ height: 76, display: "flex", alignItems: "center", gap: 16, paddingLeft: 30, background: dark ? "#2A2724" : BG, borderBottom: dark ? "none" : `1px solid ${LINE}`, fontFamily: franklin, fontWeight: 600, fontSize: 28, color: dark ? "#F3EADB" : TEXT }}>
+      {dark ? ["#ff5f57", "#febc2e", "#28c840"].map((c) => <span key={c} style={{ width: 18, height: 18, borderRadius: 9, background: c }} />) : <span style={{ width: 16, height: 16, borderRadius: 8, background: ORANGE }} />}
+      {title} {sub && <span style={{ color: MUTED, fontWeight: 500 }}>{sub}</span>}
+    </div>
+    {children}
+  </div>
+);
+
+const CODE_FAST = [
+  "import { Claude } from '@anthropic-ai/sdk';",
+  "const claude = new Claude();",
+  "",
+  "async function ship(task: string) {",
+  "  const plan = await claude.plan(task);",
+  "  for (const step of plan.steps) {",
+  "    await claude.edit(step.file, step.patch);",
+  "    const ok = await runTests(step.file);",
+  "    if (!ok) await claude.fix(step);",
+  "  }",
+  "  return claude.commit('feat: ' + task);",
+  "}",
+  "",
+  "export const render = (scene) =>",
+  "  scene.mesh.map((v) => rotate(v, t));",
+  "",
+  "await ship('draw a 3D torus');",
+  "await ship('fix the flaky test');",
+  "await ship('release Opus 5.5');",
 ];
+const NEWS = [
+  { tag: "LIVEBENCH 2.0", head: "Fable 5.1 takes #1 overall", num: "85.7" },
+  { tag: "CODING", head: "Claude tops the coding column", num: "97.7" },
+  { tag: "DESIGN", head: "Opus 5.5 leads Design", num: "86.9" },
+  { tag: "RELEASE", head: "Claude Opus 5.5 is here", num: "5.5" },
+  { tag: "RELEASE", head: "Fable 5.1 joins the table", num: "5.1" },
+  { tag: "RESEARCH", head: "Claude holds top-5 in every suite", num: "TOP 5" },
+];
+
 export const FlashPage: React.FC<{ i: number }> = ({ i }) => {
-  const f = FLASHES[i];
   const s = KD[13 + i];
   const t = useT() + s;
+  const u = t - s + 0.28; // each page cuts in already in motion
   const k = pop(t, s);
   const shake = Math.exp(-(t - s) * 20);
+  const wrap = { transform: `translate(${Math.sin(t * 120) * 9 * shake}px, ${Math.cos(t * 100) * 7 * shake}px)` };
+  if (i < 2) {
+    return (
+      <AbsoluteFill style={{ background: i === 0 ? BG : "#F3F1EA", ...wrap }}>
+        <Win title={i === 0 ? "Draw a 3D torus" : "Animate a 3D wave surface"} sub="Artifact · 3D" k={k}>
+          <div style={{ position: "absolute", left: 0, right: 0, top: 76, bottom: 0, background: i === 0 ? "#fff" : "#FFFDF8" }} />
+        </Win>
+        {i === 0 ? <Torus u={u} cx={960} cy={560} /> : <Surface u={u} cx={960} cy={560} />}
+        <div style={{ position: "absolute", left: 190, top: 880, fontFamily: mono, fontSize: 28, color: MUTED }}>{typed(i === 0 ? "claude.draw3D('torus')" : "claude.animate(surface)", t, s, 90)}</div>
+        <Ring x={960} y={560} t={t} at={s} size={600} w={5} life={0.4} />
+        <CornerClaude t={t} />
+      </AbsoluteFill>
+    );
+  }
+  if (i < 4) {
+    const shown = Math.floor(u * 420);
+    const text = CODE_FAST.join("\n").slice(0, i === 2 ? shown : shown + 220);
+    const lines = text.split("\n");
+    const off = Math.max(0, lines.length - 14);
+    return (
+      <AbsoluteFill style={{ background: i === 2 ? "#F3F1EA" : BG, ...wrap }}>
+        <Win title={i === 2 ? "claude-code" : "ship.ts"} sub={i === 2 ? "writing code" : "tests running"} dark={i === 2} k={k}>
+          <div style={{ padding: "26px 44px", fontFamily: mono, fontSize: 40, lineHeight: 1.45, color: i === 2 ? "#E8DFCB" : TEXT, whiteSpace: "pre" }}>
+            {lines.slice(off).map((l, n) => (
+              <div key={n + off}><span style={{ color: i === 2 ? "#6b6358" : "#BDB8A8", marginRight: 26 }}>{String(n + off + 1).padStart(2, " ")}</span>{l}</div>
+            ))}
+          </div>
+          {i === 3 && (
+            <div style={{ position: "absolute", right: 40, top: 110, width: 340, background: "#fff", border: `1px solid ${LINE}`, borderRadius: 20, padding: "16px 24px", fontFamily: franklin, boxShadow: "0 10px 30px rgba(60,50,30,0.12)" }}>
+              <div style={{ fontSize: 16, letterSpacing: "0.16em", color: MUTED, fontWeight: 700 }}>TESTS</div>
+              <div style={{ fontFamily: serif, fontWeight: 600, fontSize: 80, color: GREEN }}>{Math.min(1284, Math.floor(1284 * Math.min(1, u * 2.4))).toLocaleString("en-US")}</div>
+            </div>
+          )}
+        </Win>
+        <Ring x={960} y={540} t={t} at={s} size={600} w={5} life={0.4} />
+        <CornerClaude t={t} />
+      </AbsoluteFill>
+    );
+  }
+  // news frames
+  if (i === 4) {
+    return (
+      <AbsoluteFill style={wrap}>
+        <Paper />
+        <div style={{ position: "absolute", left: 100, right: 100, top: 60, height: 6, background: "#1d1a17" }} />
+        <div style={{ position: "absolute", left: 0, right: 0, top: 84, textAlign: "center", fontFamily: playfair, fontWeight: 900, fontSize: 130, color: "#1d1a17" }}>The Claude Times</div>
+        <div style={{ position: "absolute", left: 100, right: 100, top: 240, height: 3, background: "#1d1a17" }} />
+        <div style={{ position: "absolute", left: 100, top: 290, width: 1000, fontFamily: playfair, fontWeight: 900, fontSize: 150, lineHeight: 1.02, color: "#1d1a17", transform: `scale(${0.7 + 0.3 * Math.min(1.1, k)})`, transformOrigin: "left top" }}>Claude Opus 5.5 is here</div>
+        <div style={{ position: "absolute", left: 1200, top: 290, width: 620, height: 600, background: ORANGE, borderRadius: 8, boxShadow: "10px 12px 0 rgba(60,44,28,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Img src={staticFile("mog/claude.png")} style={{ width: 380, height: 380, filter: "brightness(0) invert(1)", transform: `rotate(${u * 300}deg)` }} />
+        </div>
+        {[0, 1, 2, 3, 4].map((n) => <div key={n} style={{ position: "absolute", left: 100, top: 660 + n * 46, width: 1000 * Math.min(1, Math.max(0, u * 4 - n * 0.3)), height: 14, background: "rgba(29,26,23,0.5)", borderRadius: 4 }} />)}
+        <CornerClaude t={t} />
+      </AbsoluteFill>
+    );
+  }
   return (
-    <AbsoluteFill style={{ background: f.bg, transform: `translate(${Math.sin(t * 120) * 10 * shake}px, ${Math.cos(t * 100) * 8 * shake}px)` }}>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 250, textAlign: "center", fontFamily: franklin, fontWeight: 800, fontSize: 46, letterSpacing: "0.3em", color: f.fg, opacity: 0.75 }}>{f.small}</div>
-      <div style={{ position: "absolute", left: 0, right: 0, top: f.mono ? 410 : 330, textAlign: "center", fontFamily: f.mono ? mono : serif, fontWeight: 600, fontSize: f.mono ? 96 : 330, color: f.fg, lineHeight: 1.1, transform: `scale(${(0.6 + 0.4 * Math.min(1.1, k))})`, opacity: Math.min(1, k * 3) }}>{f.big}</div>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 800, textAlign: "center", fontFamily: franklin, fontWeight: 700, fontSize: 56, color: f.fg, opacity: 0.9 }}>{f.sub}</div>
-      <Ring x={960} y={540} t={t} at={s} size={600} color={f.fg} w={6} life={0.4} />
+    <AbsoluteFill style={wrap}>
+      <Paper />
+      <div style={{ position: "absolute", left: 90, top: 56, fontFamily: franklin, fontWeight: 800, fontSize: 30, letterSpacing: "0.3em", color: ORANGE }}>CLAUDE · IN THE NEWS</div>
+      {NEWS.map((n, j) => {
+        const q = pop(t, s + j * 0.045 - 0.05);
+        const col = j % 3, row = Math.floor(j / 3);
+        return (
+          <div key={j} style={{ position: "absolute", left: 90 + col * 590, top: 140 + row * 440, width: 550, height: 400, background: "#FFFDF8", border: "3px solid #1d1a17", borderRadius: 10, boxShadow: "10px 12px 0 rgba(60,44,28,0.22)", padding: "28px 32px", transform: `scale(${q}) rotate(${(1 - Math.min(1, q)) * -6}deg)` }}>
+            <div style={{ fontFamily: franklin, fontWeight: 800, fontSize: 22, letterSpacing: "0.2em", color: ORANGE }}>{n.tag}</div>
+            <div style={{ fontFamily: playfair, fontWeight: 900, fontSize: 52, lineHeight: 1.08, color: "#1d1a17", marginTop: 14 }}>{n.head}</div>
+            <div style={{ position: "absolute", left: 32, bottom: 22, fontFamily: serif, fontWeight: 600, fontSize: 84, color: "#A8442A" }}>{n.num}</div>
+          </div>
+        );
+      })}
       <CornerClaude t={t} />
     </AbsoluteFill>
   );
