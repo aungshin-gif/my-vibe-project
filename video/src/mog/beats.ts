@@ -1,13 +1,20 @@
-// Kick-drum hits of the track (seconds), found by analysing the audio.
-export const KICKS = [0.081, 0.58, 1.161, 1.382, 1.788, 2.183, 2.589, 2.995, 3.796, 4.203, 4.609, 5.016, 5.41, 5.817, 6.223, 6.641, 7.024, 7.43, 8.022, 8.243, 8.638, 9.044, 9.451, 9.857, 10.252, 10.658, 11.064, 11.726, 12.922, 13.711, 14.153, 14.524, 14.965, 15.325, 15.755, 16.254, 16.939, 17.38, 17.786, 18.193, 18.599, 18.866, 19.075, 19.389, 20.167, 20.608, 20.968, 21.409, 21.78, 22.21, 22.709, 23.046, 23.394, 23.824, 24.625, 25.821, 26.25, 26.61, 27.051];
+// Beat grid of the track, measured from the sub-bass kick (a kick on every beat, 148 BPM) - NOT from the snare/hat
+// off-beats. beat(n) = time of kick n. Bars start on beats 1, 5, 9, ... so that the drop (beat 29) is a downbeat.
+export const GRID0 = 0.403;
+export const PERIOD = 0.4035;
+export const beat = (n: number): number => GRID0 + PERIOD * n;
+export const bar = (m: number): number => beat(1 + 4 * m);
+export const DROP = beat(29); // 12.105 - the loud section starts here
 
-export const nearestKick = (t: number): number => KICKS.reduce((best, k) => (Math.abs(k - t) < Math.abs(best - t) ? k : best), KICKS[0]);
+// kicks after the drop are syncopated, so the measured ones are used there
+const LATE = [13.153, 13.743, 14.173, 14.573, 14.853, 15.043, 15.253, 15.493, 15.783, 16.273, 16.563, 16.963, 17.403, 17.673, 17.863, 18.213, 18.483, 19.503, 19.793, 20.193, 20.583, 21.033, 21.433, 21.943, 22.233, 23.013, 23.423, 23.813, 24.703, 25.203, 25.613, 25.843, 26.053, 26.273, 26.643, 27.073];
+export const HITS: number[] = [0.103, ...Array.from({ length: 31 }, (_, n) => beat(n)), ...LATE];
 
-// 1 right on a kick, decaying to 0 over ~0.25s
+// 1 on a hit, decaying over ~0.25s
 export const pulse = (t: number, decay = 9): number => {
   let v = 0;
-  for (const k of KICKS) {
-    if (t >= k && t - k < 0.7) v = Math.max(v, Math.exp(-(t - k) * decay));
+  for (const h of HITS) {
+    if (t >= h && t - h < 0.8) v = Math.max(v, Math.exp(-(t - h) * decay));
   }
   return v;
 };

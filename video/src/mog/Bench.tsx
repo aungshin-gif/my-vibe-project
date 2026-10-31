@@ -1,52 +1,89 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { pulse } from "./beats";
+import { bar, beat, pulse } from "./beats";
 import { BENCH } from "./data";
-import { Confetti, INK, ORANGE, Paper, ease, pop, useT } from "./common";
+import { Confetti, INK, ORANGE, Ring, Sheet, Sparkles, Ticker, ease, hit, useT } from "./common";
 import { franklin, playfair, serif } from "./fonts";
 
-const ROW_AT = [18.2, 17.786, 16.939, 16.254, 15.755, 15.34]; // top row (Opus) lands last, on its own kick
+// White desk, a sheet of warm paper with the scoreboard. Rows land on the kicks; the Claude row lands on the downbeat.
+const AT = [beat(37), beat(38), beat(39), beat(40), beat(43), bar(11)]; // DeepSeek ... Gemini, GPT, Fable, Opus (reverse of the table order)
+const ORDER_AT = [AT[5], AT[4], AT[3], AT[2], AT[1], AT[0]]; // table row i (Opus first) -> its landing time
+export const BENCH_START = bar(9);
+export const BENCH_END = bar(12);
 const MIN = 70;
 const MAX = 100;
+const TILES = [
+  { label: "CODING", v: 93.1 },
+  { label: "REASONING", v: 91.8 },
+  { label: "AGENTS", v: 89.6 },
+];
 
 export const Bench: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
   const p = pulse(t);
-  const head = pop(t, 15.34, { damping: 16, stiffness: 140, mass: 0.8 });
-  const stamp = pop(t, 18.6, { damping: 9, stiffness: 200, mass: 0.7 });
-  const shake = t >= 18.2 && t < 18.5 ? Math.exp(-(t - 18.2) * 18) : 0;
+  const sheet = hit(t, BENCH_START, { damping: 14, stiffness: 140, mass: 0.9 });
+  const head = hit(t, beat(36));
+  const opus = bar(11);
+  const stamp = hit(t, beat(48), { damping: 8, stiffness: 300, mass: 0.7 });
+  const shake = t >= opus - 0.04 && t < opus + 0.3 ? Math.exp(-(t - opus) * 18) : 0;
+  const arrow = ease(t, beat(46), beat(46) + 0.5);
   return (
-    <AbsoluteFill style={{ transform: `translate(${Math.sin(t * 90) * 10 * shake}px, ${Math.cos(t * 80) * 8 * shake}px)` }}>
-      <Paper />
-      <div style={{ position: "absolute", left: 130, right: 130, top: 70, height: 5, background: INK }} />
-      <div style={{ position: "absolute", left: 130, top: 94, fontFamily: franklin, fontWeight: 800, fontSize: 26, letterSpacing: "0.3em", color: ORANGE, opacity: Math.min(1, head) }}>THE SCOREBOARD</div>
-      <div style={{ position: "absolute", left: 130, top: 130, fontFamily: playfair, fontWeight: 900, fontSize: 84, color: INK, lineHeight: 1, opacity: Math.min(1, head), transform: `translateY(${(1 - Math.min(1, head)) * 40}px)` }}>Claude takes the top spot</div>
-      <div style={{ position: "absolute", left: 130, top: 232, fontFamily: serif, fontWeight: 400, fontStyle: "italic", fontSize: 30, color: "#5a4f43", opacity: ease(t, 15.5, 15.8) }}>
-        {BENCH.metric} · higher is better
-      </div>
-      {BENCH.rows.map((r, i) => {
-        const at = ROW_AT[i];
-        const k = Math.max(0, pop(t, at, { damping: 14, stiffness: 150, mass: 0.8 }));
-        const fill = ease(t, at + 0.05, at + 0.55);
-        const value = (r.score * fill).toFixed(1);
-        const y = 330 + i * 108;
-        const w = ((r.score - MIN) / (MAX - MIN)) * 1000 * fill;
-        const lead = i === 0;
-        return (
-          <div key={r.name} style={{ position: "absolute", left: 130, top: y, width: 1660, height: 88, opacity: Math.min(1, k * 2), transform: `translateX(${(1 - Math.min(1, k)) * -80}px) scale(${lead ? 1 + p * 0.012 : 1})` }}>
-            <div style={{ position: "absolute", left: 0, top: 0, width: 380, height: 88, display: "flex", alignItems: "center", gap: 16, fontFamily: franklin, fontWeight: lead ? 800 : 600, fontSize: 34, color: INK }}>
-              {r.claude ? <Img src={staticFile("mog/claude.png")} style={{ width: 54, height: 54, transform: `rotate(${t * 40}deg)` }} /> : <span style={{ width: 54, height: 54, borderRadius: 27, background: "#cfc3ac", display: "inline-block" }} />}
-              {r.name}
+    <AbsoluteFill style={{ background: "#fff", transform: `translate(${Math.sin(t * 95) * 10 * shake}px, ${Math.cos(t * 80) * 8 * shake}px)` }}>
+      <Sparkles x={960} y={540} t={t} n={10} radius={840} color="#e5ddcf" seed={8} />
+      <Sheet x={90} y={70} w={1740} h={820} rotate={-0.6 + Math.sin(t * 1.1) * 0.25} scale={Math.max(0, sheet) * (1 + p * 0.004)}>
+        <div style={{ position: "absolute", left: 40, right: 40, top: 30, height: 5, background: INK }} />
+        <div style={{ position: "absolute", left: 40, top: 52, fontFamily: franklin, fontWeight: 800, fontSize: 24, letterSpacing: "0.3em", color: ORANGE, opacity: Math.min(1, head) }}>THE SCOREBOARD</div>
+        <div style={{ position: "absolute", left: 40, top: 86, fontFamily: playfair, fontWeight: 900, fontSize: 80, color: INK, lineHeight: 1, opacity: Math.min(1, head), transform: `translateY(${(1 - Math.min(1, head)) * 40}px)` }}>Claude takes the top spot</div>
+        <div style={{ position: "absolute", left: 40, top: 184, fontFamily: serif, fontStyle: "italic", fontSize: 28, color: "#5a4f43", opacity: ease(t, beat(36) + 0.2, beat(36) + 0.5) }}>
+          {BENCH.metric} · higher is better
+        </div>
+        {BENCH.rows.map((r, i) => {
+          const at = ORDER_AT[i];
+          const k = Math.max(0, hit(t, at, { damping: 13, stiffness: 240, mass: 0.7 }));
+          const fill = ease(t, at, at + 0.4);
+          const value = (r.score * fill).toFixed(1);
+          const y = 238 + i * 92;
+          const w = ((r.score - MIN) / (MAX - MIN)) * 940 * fill;
+          const lead = i === 0;
+          return (
+            <div key={r.name} style={{ position: "absolute", left: 40, top: y, width: 1640, height: 80, opacity: Math.min(1, k * 3), transform: `translateX(${(1 - Math.min(1, k)) * -140}px) scale(${lead ? 1 + p * 0.012 : 1})` }}>
+              <div style={{ position: "absolute", left: 0, top: 0, width: 380, height: 84, display: "flex", alignItems: "center", gap: 16, fontFamily: franklin, fontWeight: lead ? 800 : 600, fontSize: 33, color: INK }}>
+                {r.claude ? <Img src={staticFile("mog/claude.png")} style={{ width: 52, height: 52, transform: `rotate(${t * 70}deg)` }} /> : <span style={{ width: 52, height: 52, borderRadius: 26, background: "#cfc3ac", display: "inline-block" }} />}
+                {r.name}
+              </div>
+              <div style={{ position: "absolute", left: 400, top: 12, width: 940, height: 58, background: "rgba(60,44,28,0.10)", borderRadius: 8 }} />
+              <div style={{ position: "absolute", left: 400, top: 12, width: Math.max(0, w), height: 58, background: r.claude ? ORANGE : "#7a6e60", borderRadius: 8, boxShadow: r.claude ? "0 0 0 3px rgba(29,26,23,0.9)" : "none" }} />
+              <div style={{ position: "absolute", left: 1370, top: 6, fontFamily: playfair, fontWeight: 900, fontSize: 54, color: r.claude ? "#a8442a" : INK }}>{value}</div>
             </div>
-            <div style={{ position: "absolute", left: 400, top: 14, width: 1000, height: 60, background: "rgba(60,44,28,0.10)", borderRadius: 8 }} />
-            <div style={{ position: "absolute", left: 400, top: 14, width: Math.max(0, w), height: 60, background: r.claude ? ORANGE : "#7a6e60", borderRadius: 8, boxShadow: r.claude ? "0 0 0 3px rgba(29,26,23,0.9)" : "none" }} />
-            <div style={{ position: "absolute", left: 1430, top: 8, fontFamily: playfair, fontWeight: 900, fontSize: 56, color: r.claude ? "#a8442a" : INK }}>{value}</div>
+          );
+        })}
+        <Ring x={520} y={330} t={t} at={opus} size={80} color="#D97757" w={7} />
+        {/* hand-drawn arrow pointing at the Claude row */}
+        <svg width="260" height="170" viewBox="0 0 260 170" style={{ position: "absolute", left: 1400, top: 90 }}>
+          <path d="M240 20 C170 10 90 40 70 120" fill="none" stroke="#c0361e" strokeWidth="6" strokeLinecap="round" strokeDasharray="300" strokeDashoffset={300 * (1 - arrow)} />
+          <path d="M50 96 L68 130 L98 108" fill="none" stroke="#c0361e" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" opacity={ease(arrow, 0.8, 1)} />
+        </svg>
+        <div style={{ position: "absolute", left: 1470, top: 28, fontFamily: playfair, fontStyle: "italic", fontWeight: 700, fontSize: 36, color: "#c0361e", opacity: arrow }}>that&apos;s us</div>
+        <div style={{ position: "absolute", right: 60, top: 70, transform: `rotate(-9deg) scale(${Math.max(0, stamp)})`, border: "6px solid #c0361e", color: "#c0361e", fontFamily: franklin, fontWeight: 800, fontSize: 50, letterSpacing: "0.1em", padding: "6px 24px", borderRadius: 8, opacity: 0.92 }}>NO. 1</div>
+        <div style={{ position: "absolute", left: 40, bottom: 22, fontFamily: franklin, fontWeight: 500, fontSize: 20, letterSpacing: "0.08em", color: "#7a6e60" }}>ILLUSTRATIVE FIGURES FOR THIS VIDEO — NOT OFFICIAL BENCHMARK RESULTS</div>
+      </Sheet>
+      {/* stat tiles flipping in on the last bar */}
+      {TILES.map((tl, i) => {
+        const at = beat(48) + i * 0.2018;
+        const k = hit(t, at, { damping: 12, stiffness: 240, mass: 0.7 });
+        const flip = (1 - Math.min(1, k)) * 90;
+        const n = (tl.v * ease(t, at, at + 0.5)).toFixed(1);
+        return (
+          <div key={tl.label} style={{ position: "absolute", left: 0, top: 0 }}>
+            <div style={{ position: "absolute", left: 90 + i * 350, top: 905, width: 320, height: 118, background: i === 0 ? ORANGE : "#fbf6ea", border: `3px solid ${INK}`, borderRadius: 14, transform: `perspective(700px) rotateX(${flip}deg) scale(${Math.max(0, k)})`, boxShadow: "8px 10px 0 rgba(60,44,28,0.2)", padding: "10px 22px", opacity: Math.min(1, k * 2) }}>
+              <div style={{ fontFamily: franklin, fontWeight: 800, fontSize: 20, letterSpacing: "0.2em", color: i === 0 ? "#fff" : "#7a6e60" }}>{tl.label}</div>
+              <div style={{ fontFamily: playfair, fontWeight: 900, fontSize: 56, color: i === 0 ? "#fff" : INK, lineHeight: 1.05 }}>{n}</div>
+            </div>
           </div>
         );
       })}
-      <div style={{ position: "absolute", right: 150, top: 150, transform: `rotate(-9deg) scale(${Math.max(0, stamp)})`, border: "6px solid #c0361e", color: "#c0361e", fontFamily: franklin, fontWeight: 800, fontSize: 52, letterSpacing: "0.1em", padding: "6px 24px", borderRadius: 8 }}>NO. 1</div>
-      <Confetti x={1250} y={420} t={t} at={18.2} />
-      <div style={{ position: "absolute", left: 130, bottom: 40, fontFamily: franklin, fontWeight: 500, fontSize: 22, letterSpacing: "0.08em", color: "#7a6e60" }}>ILLUSTRATIVE FIGURES FOR THIS VIDEO — NOT OFFICIAL BENCHMARK RESULTS</div>
+      <Confetti x={720} y={420} t={t} at={opus} />
+      <Ticker items={["CLAUDE OPUS 5.5", "FABLE 5.1", "NO. 1 ON THE SCOREBOARD", "ALL OTHERS MOGGED"]} y={0} t={t} size={22} bg="#D97757" fg="#fff" />
     </AbsoluteFill>
   );
 };

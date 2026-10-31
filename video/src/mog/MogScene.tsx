@@ -1,48 +1,59 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { pulse } from "./beats";
-import { Caption, Chip, Logo, Mogged, ease, pop, useT } from "./common";
+import { DROP, bar, beat, pulse } from "./beats";
+import { Burst, Logo, LogoName, Mogged, Ring, Sparkles, WordCaption, ease, hit, useT } from "./common";
 
-// Claude walks in; everybody else gets stacked up and stamped MOGGED on the kicks.
-const STACK = [
-  { kind: "logo", id: "gemini", y: 150, at: 8.64 },
-  { kind: "logo", id: "chatgpt", y: 315, at: 9.04 },
-  { kind: "logo", id: "perplexity", y: 480, at: 9.45 },
-  { kind: "logo", id: "copilot", y: 650, at: 9.86 },
-  { kind: "chip", id: "Grok", color: "#111", y: 800, at: 10.25 },
-  { kind: "chip", id: "DeepSeek", color: "#4D6BFE", y: 925, at: 10.65 },
-] as const;
-const STAMPS = [10.25, 10.66, 11.06, 11.43, 11.73, 12.0];
-const SX = 500;
-const CX = 1430;
+// Claude lands on the downbeat; the others stack up on half-beats; MOGGED stamps hit on six consecutive kicks.
+const STACK: { id: LogoName; y: number; size: number }[] = [
+  { id: "gemini", y: 140, size: 120 },
+  { id: "chatgpt", y: 295, size: 124 },
+  { id: "perplexity", y: 450, size: 124 },
+  { id: "copilot", y: 610, size: 118 },
+  { id: "grok", y: 770, size: 118 },
+  { id: "deepseek", y: 930, size: 124 },
+];
+const ENTER = [0, 1, 2, 3, 4, 5].map((i) => bar(5) + i * 0.2018); // half-beats from the downbeat
+const STAMPS = [23, 24, 25, 26, 27, 28].map((n) => beat(n)); // 9.684 ... 11.701
+const SX = 480;
+const CX = 1440;
+export const MOG_START = bar(5);
+export const MOG_END = DROP;
 
 export const MogScene: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
   const p = pulse(t);
-  // screen shake after each stamp
-  const shake = STAMPS.reduce((m, s) => (t >= s && t - s < 0.25 ? Math.max(m, Math.exp(-(t - s) * 20)) : m), 0);
-  const sx = Math.sin(t * 90) * 14 * shake;
-  const sy = Math.cos(t * 80) * 10 * shake;
-  const claudeIn = pop(t, 8.55, { damping: 12, stiffness: 120, mass: 0.9 });
-  const spin = (1 - Math.min(1, claudeIn)) * -300 + Math.sin(t * 1.4) * 4;
-  const quote = t < 11.65 ? "Why do you mog all of us?" : "I don't know";
+  const shake = STAMPS.reduce((m, s) => (t >= s - 0.04 && t - s < 0.3 ? Math.max(m, Math.exp(-(t - s) * 18)) : m), 0);
+  const sx = Math.sin(t * 95) * 14 * shake;
+  const sy = Math.cos(t * 85) * 10 * shake;
+  const claude = hit(t, MOG_START, { damping: 9, stiffness: 150, mass: 0.9 });
+  const spin = (1 - Math.min(1, claude)) * -360 + Math.sin(t * 1.4) * 4;
+  const late = t >= beat(28) + 0.2;
   return (
     <AbsoluteFill style={{ background: "#fff", transform: `translate(${sx}px, ${sy}px)` }}>
+      <Burst x={CX} y={560} t={t} at={MOG_START} />
+      <Ring x={CX} y={560} t={t} at={MOG_START} size={260} color="#D97757" w={8} />
+      <Sparkles x={CX} y={560} t={t} n={8} radius={290} color="#e8b9a5" seed={5} />
       {STACK.map((s, i) => {
-        const sc = Math.max(0, pop(t, s.at)) * (1 + p * 0.03);
-        const sink = STAMPS[i] !== undefined && t >= STAMPS[i] ? 0.86 : 1;
-        const y = s.y + (STAMPS[i] !== undefined && t >= STAMPS[i] ? 6 : 0);
-        return s.kind === "logo" ? (
-          <Logo key={s.id} name={s.id} size={s.id === "copilot" ? 124 : 132} x={SX} y={y} scale={sc * sink} />
-        ) : (
-          <Chip key={s.id} label={s.id} color={s.color} x={SX} y={y} size={s.id === "Grok" ? 58 : 50} scale={sc * sink} />
+        const k = Math.max(0, hit(t, ENTER[i]));
+        const stamped = t >= STAMPS[i] - 0.02;
+        const sc = k * (stamped ? 0.9 : 1) * (1 + p * 0.03);
+        return (
+          <React.Fragment key={s.id}>
+            <Ring x={SX} y={s.y} t={t} at={ENTER[i]} size={90} life={0.5} w={4} />
+            <Logo name={s.id} size={s.size} x={SX - (1 - Math.min(1, k)) * 260} y={s.y + (stamped ? 6 : 0)} scale={sc} rotate={stamped ? Math.sin((t - STAMPS[i]) * 40) * 5 * Math.exp(-(t - STAMPS[i]) * 8) : 0} />
+          </React.Fragment>
         );
       })}
-      {STACK.map((s, i) => (STAMPS[i] !== undefined ? <Mogged key={`m${s.id}`} x={SX + 100} y={s.y + 40} t={t} at={STAMPS[i]} size={s.kind === "chip" ? 34 : 44} /> : null))}
-      <Logo name="claude" size={340} x={CX} y={560} scale={Math.max(0, claudeIn) * (1 + p * 0.05)} rotate={spin} />
-      <Caption text={quote} x={950} y={560} size={46} scale={pop(t, quote === "I don't know" ? 11.65 : 8.8)} opacity={ease(t, 8.75, 8.9)} />
-      {/* white flash into the paper world */}
-      <AbsoluteFill style={{ background: "#fff", opacity: ease(t, 12.45, 12.9) }} />
+      {STACK.map((s, i) => (
+        <React.Fragment key={`m${s.id}`}>
+          <Ring x={SX + 70} y={s.y + 30} t={t} at={STAMPS[i]} size={110} color="#e5251f" w={6} life={0.5} />
+          <Mogged x={SX + 90} y={s.y + 34} t={t} at={STAMPS[i]} size={s.id === "grok" || s.id === "deepseek" ? 38 : 40} />
+        </React.Fragment>
+      ))}
+      <Logo name="claude" size={340} x={CX} y={560} scale={Math.max(0, claude) * (1 + p * 0.06)} rotate={spin + (late ? Math.sin((t - beat(28) - 0.2) * 14) * 6 : 0)} />
+      <WordCaption text="Why do you mog all of us?" x={940} y={560} t={t} at={beat(22) + 0.0} until={beat(28) + 0.18} size={46} />
+      <WordCaption text="I don't know" x={940} y={560} t={t} at={beat(28) + 0.2018} size={52} />
+      <AbsoluteFill style={{ background: "#fff", opacity: ease(t, DROP - 0.16, DROP) }} />
     </AbsoluteFill>
   );
 };
