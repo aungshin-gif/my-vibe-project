@@ -58,6 +58,28 @@ export const PhraseCaption: React.FC<{ text: string; x: number; y: number; t: nu
   return <Caption text={text} x={x} y={y - (1 - Math.min(1, k)) * 30} size={size} scale={Math.max(0, k) * out * (1 + 0.012 * Math.sin(t * 9))} rotate={(1 - Math.min(1, k)) * -5} />;
 };
 
+// Speech bubble said by one character: pops on the beat, tail points at the speaker, replaced when the next speaker talks.
+export const Bubble: React.FC<{ text: string; x: number; y: number; tx: number; ty: number; t: number; at: number; until: number; size?: number }> = ({ text, x, y, tx, ty, t, at, until, size = 46 }) => {
+  if (t < at - 0.1 || t > until + 0.2) return null;
+  const k = Math.max(0, hit(t, at, { damping: 11, stiffness: 280, mass: 0.7 }));
+  const out = 1 - ease(t, until - 0.08, until + 0.15);
+  const w = text.length * size * 0.56 + 70;
+  const h = size + 56;
+  const dx = tx - x, dy = ty - y, d = Math.hypot(dx, dy) || 1;
+  const ux = dx / d, uy = dy / d;
+  const bx = x + ux * Math.min(w / 2 - 30, 80), by = y + uy * (h / 2 - 20); // tail root, inside the body
+  const px = -uy, py = ux;
+  const tipX = tx - ux * 45, tipY = ty - uy * 45;
+  return (
+    <div style={{ position: "absolute", left: 0, top: 0, width: 1920, height: 1080, transformOrigin: `${x}px ${y}px`, transform: `scale(${k * out})` }}>
+      <svg width={1920} height={1080} style={{ position: "absolute", left: 0, top: 0 }}>
+        <polygon points={`${bx + px * 22},${by + py * 22} ${bx - px * 22},${by - py * 22} ${tipX},${tipY}`} fill="#fff" stroke="#111" strokeWidth={5} strokeLinejoin="round" />
+      </svg>
+      <div style={{ position: "absolute", left: x - w / 2, top: y - h / 2, width: w, height: h, borderRadius: h / 2.2, background: "#fff", border: "5px solid #111", boxShadow: "6px 6px 0 #111", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: poppins, fontWeight: 700, fontSize: size, color: "#111", whiteSpace: "nowrap" }}>{text}</div>
+    </div>
+  );
+};
+
 export const Mogged: React.FC<{ x: number; y: number; t: number; at: number; size?: number }> = ({ x, y, t, at, size = 54 }) => {
   if (t < at) return null; // not a frame before the kick
   const k = Math.min(1, (t - at) / 0.12);

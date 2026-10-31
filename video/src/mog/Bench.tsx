@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
 import { KD, pulse } from "./beats";
 import { COLUMNS, NOTE, ROWS, SOURCE, Row } from "./data";
-import { Confetti, CornerClaude, INK, ORANGE, Paper, Ring, Sparkles, ease, hit, useT } from "./common";
+import { LOGOS, LogoName, Confetti, CornerClaude, INK, ORANGE, Paper, Ring, Sparkles, ease, hit, useT } from "./common";
 import { franklin, mono, playfair } from "./fonts";
 
 // The full LiveBench 2.0 table: every row, every column. Rows land on the kicks in waves, numbers count up,
@@ -26,6 +26,9 @@ KEYS.forEach((k) => {
   const sorted = [...ROWS].map((r) => r[k]).sort((a, b) => b - a);
   RANK[k] = ROWS.map((r) => sorted.indexOf(r[k]) + 1);
 });
+
+const logoFor = (n: string): LogoName | null =>
+  n.startsWith("GPT") ? "chatgpt" : n.startsWith("Gemini") ? "gemini" : n.startsWith("DeepSeek") ? "deepseek" : n.startsWith("Kimi") ? "kimi" : n.startsWith("Grok") ? "grok" : n.startsWith("MiMo") ? "mimo" : n.startsWith("MiniMax") ? "minimax" : n.startsWith("Mistral") ? "mistral" : n.startsWith("Muse") ? "metaai" : null;
 
 export const Bench: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
@@ -63,7 +66,7 @@ export const Bench: React.FC<{ start: number }> = ({ start }) => {
           <div key={r.name} style={{ position: "absolute", left: X0, top: y, width: 1740, height: ROW_H, opacity: Math.min(1, k * 3), transform: `translateY(${(1 - Math.min(1, k)) * 26}px)`, background: cl ? `rgba(217,119,87,${0.1 + glow * 0.25})` : "transparent", borderBottom: "1px solid rgba(60,44,28,0.14)" }}>
             {cl && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 5, background: ORANGE }} />}
             <div style={{ position: "absolute", left: 16, top: 0, height: ROW_H, display: "flex", alignItems: "center", gap: 10, fontFamily: franklin, fontWeight: cl ? 800 : 600, fontSize: 22, color: INK, whiteSpace: "nowrap" }}>
-              {cl ? <Img src={staticFile("mog/claude.png")} style={{ width: 22, height: 22, transform: `rotate(${t * 120}deg)` }} /> : <span style={{ width: 22 }} />}
+              {cl ? <Img src={staticFile("mog/claude.png")} style={{ width: 28, height: 28, transform: `rotate(${t * 120}deg)` }} /> : logoFor(r.name) ? <Img src={staticFile(LOGOS[logoFor(r.name)!].src)} style={{ width: 28, height: 28, objectFit: "contain" }} /> : <span style={{ width: 28 }} />}
               {r.name}
               {r.open && <span style={{ fontFamily: mono, fontWeight: 600, fontSize: 13, color: "#2f7d4f", border: "1.5px solid #2f7d4f", borderRadius: 6, padding: "0 6px" }}>open</span>}
             </div>

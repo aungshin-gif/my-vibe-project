@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { bar, beat, pulse } from "./beats";
-import { CornerClaude, Logo, LogoName, PhraseCaption, Ring, Sparkles, hit, useT } from "./common";
+import { CornerClaude, Logo, LogoName, Bubble, Ring, Sparkles, hit, useT } from "./common";
 
 // White screen, the logos chill together (ChatGPT stays on the left, Gemini and Copilot drop by). ChatGPT (left) stays; guests land on the beat and every caption stays
 // on screen for 1-1.5 s. Phrase changes follow the vocal: 1.4s "But I am not so ready...", 3.6s "Now I see...", 6.8s "I need...".
@@ -30,6 +30,9 @@ export const Chill: React.FC = () => {
       <Ring x={LX} y={Y} t={t} at={0.103} size={170} />
       <Sparkles x={LX} y={Y} t={t} n={5} radius={210} seed={1} />
       <Logo name="chatgpt" size={270} x={LX} y={Y + bob(0)} scale={chatS.sx} scaleY={chatS.sy} rotate={Math.sin(t * 1.4) * 3} />
+      {/* a conversation: ChatGPT says the first line, Copilot answers with the second */}
+      <Bubble text={GUESTS[0].line} x={560} y={250} tx={LX + 30} ty={Y - 150} t={t} at={GUESTS[0].lineAt} until={GUESTS[0].lineUntil} size={46} />
+      <Bubble text={GUESTS[1].line} x={1330} y={250} tx={GX} ty={Y - 150} t={t} at={GUESTS[1].lineAt} until={GUESTS[1].lineUntil} size={46} />
       {GUESTS.map((g, i) => {
         if (t < g.land - 0.1 || t > g.exit + 0.3) return null;
         const k = hit(t, g.land, { damping: 10, stiffness: 260, mass: 0.7 });
@@ -42,7 +45,6 @@ export const Chill: React.FC = () => {
             <Sparkles x={gx} y={Y} t={t} n={6} radius={230} seed={i + 3} />
             <div style={{ position: "absolute", left: gx - 140, top: Y + 170, width: 280, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.08)", transform: `scaleX(${(0.85 + 0.15 * Math.sin(t * 2.4 + 1)) * Math.max(0, k) * out})` }} />
             <Logo name={g.id} size={260} x={gx + (1 - Math.min(1, k)) * 600} y={Y + bob(i + 1) - (1 - Math.min(1, k)) * 120} scale={s.sx} scaleY={s.sy} rotate={Math.sin(t * 1.7 + i) * 4 + (1 - Math.min(1, k)) * 40} />
-            <PhraseCaption text={g.line} x={(LX + GX) / 2} y={Y - 300} t={t} at={g.lineAt} until={g.lineUntil} size={58} />
           </React.Fragment>
         );
       })}
