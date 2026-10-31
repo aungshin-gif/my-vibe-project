@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { Bench, BENCH_END, BENCH_START } from "./Bench";
 import { CHILL_END, Chill } from "./Chill";
-import { CODE_END, CODE_START, CodeScene } from "./CodeScene";
+import { ChartPage, ChatPage, CodePage, NamesPage, PAGE, StatsPage, TermPage } from "./Pages";
 import { MOG_FPS } from "./common";
 import "./fonts";
 import { MAST_END, MAST_START, Masthead } from "./Masthead";
@@ -29,8 +29,23 @@ export const Mog: React.FC = () => (
     <Sequence from={S(BENCH_START)} durationInFrames={S(BENCH_END) - S(BENCH_START)}>
       <Bench start={BENCH_START} />
     </Sequence>
-    <Sequence from={S(CODE_START)} durationInFrames={S(CODE_END) - S(CODE_START)}>
-      <CodeScene start={CODE_START} />
+    <Sequence from={S(PAGE.chat[0])} durationInFrames={S(PAGE.chat[1]) - S(PAGE.chat[0])}>
+      <ChatPage />
+    </Sequence>
+    <Sequence from={S(PAGE.code[0])} durationInFrames={S(PAGE.code[1]) - S(PAGE.code[0])}>
+      <CodePage />
+    </Sequence>
+    <Sequence from={S(PAGE.chart[0])} durationInFrames={S(PAGE.chart[1]) - S(PAGE.chart[0])}>
+      <ChartPage />
+    </Sequence>
+    <Sequence from={S(PAGE.stats[0])} durationInFrames={S(PAGE.stats[1]) - S(PAGE.stats[0])}>
+      <StatsPage />
+    </Sequence>
+    <Sequence from={S(PAGE.term[0])} durationInFrames={S(PAGE.term[1]) - S(PAGE.term[0])}>
+      <TermPage />
+    </Sequence>
+    <Sequence from={S(PAGE.names[0])} durationInFrames={S(PAGE.names[1]) - S(PAGE.names[0])}>
+      <NamesPage />
     </Sequence>
     <Sequence from={S(OUTRO_START)} durationInFrames={MOG_FRAMES - S(OUTRO_START)}>
       <Outro start={OUTRO_START} />

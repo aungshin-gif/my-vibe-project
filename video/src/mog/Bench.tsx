@@ -7,8 +7,8 @@ import { franklin, mono, playfair } from "./fonts";
 
 // The full LiveBench 2.0 table: every row, every column. Rows land on the kicks in waves, numbers count up,
 // the top-5 shading sweeps across the columns, then the Claude rows pulse.
-export const BENCH_START = KD[8]; // 19.007
-export const BENCH_END = KD[16]; // 22.77
+export const BENCH_START = KD[5];
+export const BENCH_END = KD[10];
 
 const X0 = 90;
 const NAME_W = 470;
@@ -17,7 +17,7 @@ const COLX = COLW.map((_, i) => X0 + NAME_W + COLW.slice(0, i).reduce((a, b) => 
 const TOP = 200;
 const HEAD_H = 50;
 const ROW_H = 36;
-const WAVES = [KD[8], KD[9], KD[10], KD[11], KD[12]];
+const WAVES = [KD[5], KD[5] + 0.2, KD[6], KD[6] + 0.2, KD[7]];
 const rowAt = (i: number) => (i < 4 ? WAVES[0] + i * 0.035 : i < 9 ? WAVES[1] + (i - 4) * 0.035 : i < 13 ? WAVES[2] + (i - 9) * 0.035 : i < 16 ? WAVES[3] + (i - 13) * 0.035 : WAVES[4] + (i - 16) * 0.035);
 const KEYS = ["overall", "agentic", "design", "coding", "browser", "data", "research", "reasoning"] as const;
 // rank (1 = best) of each row in each column, for the top-5 shading
@@ -33,10 +33,10 @@ const logoFor = (n: string): LogoName | null =>
 export const Bench: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
   const p = pulse(t);
-  const head = hit(t, KD[8]);
-  const shadeT = KD[13];
-  const claudePulse = (t >= KD[14] && t < KD[14] + 0.4 ? Math.exp(-(t - KD[14]) * 8) : 0) + (t >= KD[15] && t < KD[15] + 0.4 ? Math.exp(-(t - KD[15]) * 8) : 0);
-  const stamp = hit(t, KD[14], { damping: 8, stiffness: 300, mass: 0.7 });
+  const head = hit(t, KD[5]);
+  const shadeT = KD[7];
+  const claudePulse = (t >= KD[8] && t < KD[8] + 0.4 ? Math.exp(-(t - KD[8]) * 8) : 0) + (t >= KD[9] && t < KD[9] + 0.4 ? Math.exp(-(t - KD[9]) * 8) : 0);
+  const stamp = hit(t, KD[8], { damping: 8, stiffness: 300, mass: 0.7 });
   return (
     <AbsoluteFill style={{ background: "#fff" }}>
       <Paper />
@@ -44,7 +44,7 @@ export const Bench: React.FC<{ start: number }> = ({ start }) => {
       <div style={{ position: "absolute", left: X0, right: X0, top: 40, height: 5, background: INK }} />
       <div style={{ position: "absolute", left: X0, top: 62, fontFamily: franklin, fontWeight: 800, fontSize: 24, letterSpacing: "0.3em", color: ORANGE, opacity: Math.min(1, head) }}>THE LEADERBOARD · {SOURCE.toUpperCase()}</div>
       <div style={{ position: "absolute", left: X0, top: 94, fontFamily: playfair, fontWeight: 900, fontSize: 72, color: INK, lineHeight: 1, opacity: Math.min(1, head), transform: `translateY(${(1 - Math.min(1, head)) * 40}px)` }}>Claude leads the board</div>
-      <div style={{ position: "absolute", left: X0, top: 172, fontFamily: franklin, fontWeight: 600, fontSize: 24, color: "#6b5d4d", opacity: ease(t, KD[8] + 0.2, KD[8] + 0.45) }}>Fable 5.1 is #1 overall and in Coding · Opus 5.5 leads Design</div>
+      <div style={{ position: "absolute", left: X0, top: 172, fontFamily: franklin, fontWeight: 600, fontSize: 24, color: "#6b5d4d", opacity: ease(t, KD[5] + 0.2, KD[5] + 0.45) }}>Fable 5.1 is #1 overall and in Coding · Opus 5.5 leads Design</div>
       {/* header */}
       <div style={{ position: "absolute", left: X0, top: TOP + 14, width: 1740, height: HEAD_H, opacity: Math.min(1, head * 2) }}>
         <div style={{ position: "absolute", left: 0, top: 10, fontFamily: mono, fontWeight: 600, fontSize: 18, letterSpacing: "0.12em", color: "#7a6e60" }}>MODEL</div>
@@ -84,10 +84,10 @@ export const Bench: React.FC<{ start: number }> = ({ start }) => {
           </div>
         );
       })}
-      <Ring x={420} y={TOP + 14 + HEAD_H + 18} t={t} at={KD[14]} size={90} color="#D97757" w={6} />
+      <Ring x={420} y={TOP + 14 + HEAD_H + 18} t={t} at={KD[8]} size={90} color="#D97757" w={6} />
       <div style={{ position: "absolute", right: 110, top: 78, transform: `rotate(-8deg) scale(${Math.max(0, stamp)})`, border: "6px solid #c0361e", color: "#c0361e", fontFamily: franklin, fontWeight: 800, fontSize: 46, letterSpacing: "0.1em", padding: "4px 22px", borderRadius: 8, opacity: 0.92 }}>FABLE 5.1 · #1</div>
-      <div style={{ position: "absolute", left: X0, right: 150, bottom: 28, fontFamily: mono, fontSize: 15, lineHeight: 1.45, color: "#8a7d6c", opacity: ease(t, KD[12], KD[12] + 0.3) }}>// {NOTE}</div>
-      <Confetti x={520} y={TOP + 80} t={t} at={KD[14]} n={40} />
+      <div style={{ position: "absolute", left: X0, right: 150, bottom: 28, fontFamily: mono, fontSize: 15, lineHeight: 1.45, color: "#8a7d6c", opacity: ease(t, KD[7], KD[7] + 0.3) }}>// {NOTE}</div>
+      <Confetti x={520} y={TOP + 80} t={t} at={KD[8]} n={40} />
       <CornerClaude t={t} y={72} />
       <AbsoluteFill style={{ background: "#fff", opacity: 0 * p }} />
     </AbsoluteFill>
