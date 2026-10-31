@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { KD, PRE_KICKS, beat, pulse } from "./beats";
+import { KD, beat, pulse } from "./beats";
 import { Burst, CornerClaude, Logo, LogoName, Mogged, PhraseCaption, Ring, Sparkles, ease, hit, useT } from "./common";
 import { CHILL_END } from "./Chill";
 
@@ -9,9 +9,9 @@ import { CHILL_END } from "./Chill";
 const COLS = [230, 470, 710, 950];
 const ROWS = [170, 390, 610, 830];
 const IDS: LogoName[] = ["chatgpt", "gemini", "copilot", "perplexity", "grok", "deepseek", "metaai", "mistral", "qwen", "kimi", "minimax", "cohere", "huggingface", "zhipu", "ernie", "mimo"];
-const ENTER = [0, 6.659, 6.659, 6.859, 6.859, 7.06, 7.06, 7.263, 7.263, 7.465, 7.465, 7.666, 7.666, 7.867, 7.867, 8.07]; // two per half-beat
+const ENTER = [0, 16, 16, 16.5, 16.5, 17, 17, 17.5, 17.5, 18, 18, 18.5, 18.5, 19, 19, 19.5].map((n, i) => (i === 0 ? 0 : beat(n))); // two per half-beat
 const STAMP_AT = IDS.map((_, i) => KD[Math.floor(i / 2)]); // pair k is stamped on drop kick k
-const CLAUDE_AT = 8.872;
+const CLAUDE_AT = beat(21);
 const CX = 1500;
 export const MOG_START = CHILL_END;
 export const MOG_END = KD[8];
@@ -19,7 +19,7 @@ export const MOG_END = KD[8];
 export const MogScene: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
   const p = pulse(t);
-  const preKicks = [beat(21), beat(22), beat(23), beat(24), beat(25), beat(26), ...PRE_KICKS];
+  const preKicks = [21, 22, 23, 24, 25, 26, 27, 28, 29, 30].map((n) => beat(n));
   // tension: shiver grows toward the drop
   const tension = ease(t, CLAUDE_AT, KD[0]);
   const shiver = (i: number) => (t >= CLAUDE_AT && t < KD[0] ? Math.sin(t * 70 + i * 1.7) * (1 + 7 * tension) * (0.4 + p) : 0);
@@ -29,7 +29,7 @@ export const MogScene: React.FC<{ start: number }> = ({ start }) => {
   const claude = hit(t, CLAUDE_AT, { damping: 9, stiffness: 150, mass: 0.9 });
   const charge = 1 + tension * 0.18 + p * 0.05;
   const spin = (1 - Math.min(1, claude)) * -360 + Math.sin(t * 1.4) * 4 + (t > CLAUDE_AT ? (t - CLAUDE_AT) * (40 + 220 * tension * tension) : 0);
-  const glide = ease(t, 6.456, 6.95);
+  const glide = ease(t, beat(15), beat(16));
   const flash = t < KD[0] ? ease(t, KD[0] - 0.2, KD[0]) : 1 - ease(t, KD[0], KD[0] + 0.25);
   return (
     <AbsoluteFill style={{ background: "#fff", transform: `translate(${sx}px, ${sy}px)` }}>
@@ -66,9 +66,9 @@ export const MogScene: React.FC<{ start: number }> = ({ start }) => {
         );
       })}
       <Logo name="claude" size={380} x={CX} y={580} scale={Math.max(0, claude) * charge} rotate={spin} />
-      <PhraseCaption text="Why does nobody use me?" x={1100} y={80} t={t} at={7.06} until={8.55} size={52} />
-      <PhraseCaption text="Why do you mog all of us?" x={CX} y={250} t={t} at={9.285} until={11.7} size={50} />
-      <PhraseCaption text="I don't know" x={CX} y={250} t={t} at={11.899} until={12.95} size={60} />
+      <PhraseCaption text="Why does nobody use me?" x={1100} y={80} t={t} at={beat(17)} until={beat(21) - 0.1} size={52} />
+      <PhraseCaption text="Why do you mog all of us?" x={CX} y={250} t={t} at={beat(22)} until={beat(28)} size={50} />
+      <PhraseCaption text="I don't know" x={CX} y={250} t={t} at={beat(29)} until={KD[0] - 0.02} size={60} />
       <CornerClaude t={t} />
       <AbsoluteFill style={{ background: "#fff", opacity: Math.max(0, flash) * 0.95 }} />
     </AbsoluteFill>

@@ -4,13 +4,13 @@ import { KD, pulse } from "./beats";
 import { Confetti, CornerClaude, INK, ORANGE, Ring, Sheet, Sparkles, ease, hit, useT } from "./common";
 import { franklin, mono, playfair } from "./fonts";
 
-export const CODE_START = KD[21];
-export const CODE_END = KD[25];
+export const CODE_START = KD[22];
+export const CODE_END = KD[31];
 const typed = (s: string, t: number, at: number, cps: number) => s.slice(0, Math.max(0, Math.min(s.length, Math.floor((t - at) * cps))));
 
-const A0 = KD[21]; // terminal  22.77
-const B0 = KD[22]; // editor    23.109
-const C0 = KD[23]; // chart + tests 23.556
+const A0 = KD[22]; // terminal  21.76
+const B0 = KD[24]; // editor    22.57
+const C0 = KD[26]; // chart + tests 23.37
 const TERM = [
   { at: A0, text: '$ claude "fix the flaky checkout test"', color: "#f3eadb", cps: 90 },
   { at: A0 + 0.5, text: "● Reading src/checkout.test.ts", color: "#d6c9b0", cps: 110 },
@@ -42,7 +42,7 @@ export const CodeScene: React.FC<{ start: number }> = ({ start }) => {
   const a = hit(t, A0, { damping: 13, stiffness: 180, mass: 0.8 });
   const b = hit(t, B0, { damping: 13, stiffness: 180, mass: 0.8 });
   const c = hit(t, C0, { damping: 13, stiffness: 180, mass: 0.8 });
-  const shipAt = KD[24];
+  const shipAt = KD[28];
   const ship = hit(t, shipAt, { damping: 8, stiffness: 320, mass: 0.7 });
   const shake = t >= shipAt - 0.04 && t < shipAt + 0.3 ? Math.exp(-(t - shipAt) * 18) : 0;
   const draw = ease(t, C0 + 0.05, C0 + 0.8);

@@ -9,7 +9,7 @@ const LETTERS = ["A", "N", "T", "H", "R", "*", "P", "I", "C"];
 const S0 = KD[8]; // 16.76
 const REVEAL = [KD[8], KD[8] + 0.2, KD[9], KD[9] + 0.2, KD[10], KD[10] + 0.2, KD[11], KD[11] + 0.2, KD[12]];
 export const MAST_START = KD[8];
-export const MAST_END = KD[13];
+export const MAST_END = KD[14];
 
 export const Masthead: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
