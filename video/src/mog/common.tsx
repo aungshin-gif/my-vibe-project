@@ -40,23 +40,12 @@ export const Caption: React.FC<{ text: string; x: number; y: number; size?: numb
   <div style={{ position: "absolute", left: x, top: y, transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`, opacity, fontFamily: poppins, fontWeight: 700, fontSize: size, color: "#fff", WebkitTextStroke: `${Math.max(3, size * 0.07)}px #000`, paintOrder: "stroke fill", letterSpacing: "-0.01em", whiteSpace: "nowrap", textAlign: "center" }}>{text}</div>
 );
 
-// Caption whose words land one by one on half-beats (natural word spacing, hidden words keep their place).
-export const WordCaption: React.FC<{ text: string; x: number; y: number; t: number; at: number; size?: number; gap?: number; until?: number }> = ({ text, x, y, t, at, size = 64, gap = 0.2015, until = 1e9 }) => {
-  if (t < at - 0.1 || t > until) return null;
-  const words = text.split(" ");
-  return (
-    <div style={{ position: "absolute", left: x, top: y, transform: "translate(-50%, -50%)", display: "flex", gap: size * 0.3, whiteSpace: "nowrap" }}>
-      {words.map((w, i) => {
-        const k = hit(t, at + i * gap);
-        const kk = Math.min(1.15, k);
-        return (
-          <span key={i} style={{ display: "inline-block", fontFamily: poppins, fontWeight: 700, fontSize: size, color: "#fff", WebkitTextStroke: `${Math.max(3, size * 0.07)}px #000`, paintOrder: "stroke fill", letterSpacing: "-0.01em", transform: `translateY(${(1 - Math.min(1, kk)) * -26}px) rotate(${(1 - Math.min(1, kk)) * -7}deg) scale(${Math.max(0, kk)})`, opacity: t >= at + i * gap - 0.08 ? 1 : 0 }}>
-            {w}
-          </span>
-        );
-      })}
-    </div>
-  );
+// Whole phrase pops in on a beat and stays until `until` (long enough to read).
+export const PhraseCaption: React.FC<{ text: string; x: number; y: number; t: number; at: number; until: number; size?: number }> = ({ text, x, y, t, at, until, size = 64 }) => {
+  if (t < at - 0.1 || t > until + 0.2) return null;
+  const k = hit(t, at, { damping: 11, stiffness: 260, mass: 0.7 });
+  const out = 1 - ease(t, until - 0.08, until + 0.15);
+  return <Caption text={text} x={x} y={y - (1 - Math.min(1, k)) * 30} size={size} scale={Math.max(0, k) * out * (1 + 0.012 * Math.sin(t * 9))} rotate={(1 - Math.min(1, k)) * -5} />;
 };
 
 export const Mogged: React.FC<{ x: number; y: number; t: number; at: number; size?: number }> = ({ x, y, t, at, size = 54 }) => {

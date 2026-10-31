@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { DROP, bar, beat, pulse } from "./beats";
-import { Burst, Logo, LogoName, Mogged, Ring, Sparkles, WordCaption, ease, hit, useT } from "./common";
+import { Burst, Logo, LogoName, Mogged, PhraseCaption, Ring, Sparkles, ease, hit, useT } from "./common";
 
 // Claude lands on the downbeat; the others stack up on half-beats; MOGGED stamps hit on six consecutive kicks.
 const STACK: { id: LogoName; y: number; size: number }[] = [
@@ -51,8 +51,8 @@ export const MogScene: React.FC<{ start: number }> = ({ start }) => {
         </React.Fragment>
       ))}
       <Logo name="claude" size={340} x={CX} y={560} scale={Math.max(0, claude) * (1 + p * 0.06)} rotate={spin + (late ? Math.sin((t - beat(28) - 0.2) * 14) * 6 : 0)} />
-      <WordCaption text="Why do you mog all of us?" x={940} y={560} t={t} at={beat(22) + 0.0} until={beat(28) + 0.18} size={46} />
-      <WordCaption text="I don't know" x={940} y={560} t={t} at={beat(28) + 0.2018} size={52} />
+      <PhraseCaption text="Why do you mog all of us?" x={940} y={560} t={t} at={beat(22)} until={beat(28)} size={46} />
+      <PhraseCaption text="I don't know" x={940} y={560} t={t} at={beat(28)} until={DROP - 0.05} size={56} />
       <AbsoluteFill style={{ background: "#fff", opacity: ease(t, DROP - 0.16, DROP) }} />
     </AbsoluteFill>
   );
