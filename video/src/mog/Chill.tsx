@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { bar, beat, pulse } from "./beats";
-import { CornerClaude, Logo, LogoName, Bubble, Ring, Sparkles, hit, useT } from "./common";
+import { CornerClaude, Logo, LogoName, PhraseCaption, Ring, Sparkles, hit, useT } from "./common";
 
 // White screen, the logos chill together (ChatGPT stays on the left, Gemini and Copilot drop by). ChatGPT (left) stays; guests land on the beat and every caption stays
 // on screen for 1-1.5 s. Phrase changes follow the vocal: 1.4s "But I am not so ready...", 3.6s "Now I see...", 6.8s "I need...".
@@ -31,8 +31,8 @@ export const Chill: React.FC = () => {
       <Sparkles x={LX} y={Y} t={t} n={5} radius={210} seed={1} />
       <Logo name="chatgpt" size={270} x={LX} y={Y + bob(0)} scale={chatS.sx} scaleY={chatS.sy} rotate={Math.sin(t * 1.4) * 3} />
       {/* a conversation: ChatGPT says the first line, Copilot answers with the second */}
-      <Bubble text={GUESTS[0].line} x={560} y={250} tx={LX + 30} ty={Y - 150} t={t} at={GUESTS[0].lineAt} until={GUESTS[0].lineUntil} size={46} />
-      <Bubble text={GUESTS[1].line} x={1330} y={250} tx={GX} ty={Y - 150} t={t} at={GUESTS[1].lineAt} until={GUESTS[1].lineUntil} size={46} />
+      <PhraseCaption text={GUESTS[0].line} x={LX + 60} y={Y - 260} t={t} at={GUESTS[0].lineAt} until={GUESTS[0].lineUntil} size={50} />
+      <PhraseCaption text={GUESTS[1].line} x={GX - 40} y={Y - 260} t={t} at={GUESTS[1].lineAt} until={GUESTS[1].lineUntil} size={50} />
       {GUESTS.map((g, i) => {
         if (t < g.land - 0.1 || t > g.exit + 0.3) return null;
         const k = hit(t, g.land, { damping: 10, stiffness: 260, mass: 0.7 });
