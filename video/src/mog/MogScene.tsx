@@ -65,9 +65,11 @@ export const MogScene: React.FC<{ start: number }> = ({ start }) => {
       ))}
       <Logo name="claude" size={380} x={CX} y={580} scale={Math.max(0, claude) * charge} rotate={spin} />
       {/* a conversation: Perplexity asks, Claude answers, Perplexity reacts */}
-      <PhraseCaption text="I need an explanation" x={1330} y={190} t={t} at={beat(16)} until={9.2} size={54} />
-      <PhraseCaption text="Tell me more" x={1500} y={340} t={t} at={beat(22)} until={10.2} size={58} />
-      <PhraseCaption text="Why I'm in love now" x={1330} y={190} t={t} at={10.25} until={MOG_END - 0.04} size={54} />
+      {/* original dialogue: Perplexity asks, Claude answers */}
+      <PhraseCaption text="Is this a meeting?" x={1330} y={190} t={t} at={beat(16)} until={8.78} size={56} />
+      <PhraseCaption text="Hi everyone." x={1500} y={340} t={t} at={CLAUDE_AT} until={10.2} size={64} />
+      <PhraseCaption text="Why is it getting so loud?" x={1330} y={190} t={t} at={10.25} until={11.62} size={56} />
+      <PhraseCaption text="Wait... what is happening?" x={1330} y={190} t={t} at={11.7} until={MOG_END - 0.04} size={56} />
       <CornerClaude t={t} />
       <AbsoluteFill style={{ background: "#fff", opacity: Math.max(0, flash) * 0.95 }} />
     </AbsoluteFill>

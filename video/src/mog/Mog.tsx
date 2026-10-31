@@ -22,13 +22,11 @@ const LyricPage: React.FC = () => {
   const t = useT() + LYRIC_START;
   const p = pulse(t);
   const a = Math.max(0, hit(t, KD[1]));
-  const b = Math.max(0, hit(t, KD[2]));
   return (
     <AbsoluteFill>
       <Paper />
       <Ring x={960} y={540} t={t} at={KD[1]} size={500} color="#D97757" w={8} />
-      <Caption text="I don't know" x={960} y={400} size={84} scale={a * (1 + p * 0.03)} />
-      <Caption text="How can I live forever?" x={960} y={560} size={110} scale={b * (1 + p * 0.03)} />
+      <Caption text="I just keep learning." x={960} y={540} size={120} scale={a * (1 + p * 0.03)} />
       <CornerClaude t={t} />
     </AbsoluteFill>
   );

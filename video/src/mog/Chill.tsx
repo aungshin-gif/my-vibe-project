@@ -11,10 +11,17 @@ const Y = 610;
 export const CHILL_END = beat(15); // 6.456 - the crowd starts to gather
 
 // Captions are the song's own lyric lines, shown while they are sung (times read from the lyric video).
-type Guest = { id: LogoName; land: number; exit: number; line: string; lineAt: number; lineUntil: number };
+type Guest = { id: LogoName; land: number; exit: number };
 const GUESTS: Guest[] = [
-  { id: "gemini", land: bar(0), exit: beat(8) - 0.05, line: "But I am not so ready for this world", lineAt: 1.4, lineUntil: 3.5 },
-  { id: "copilot", land: beat(8), exit: CHILL_END - 0.05, line: "Now I see things I didn't see before", lineAt: 3.62, lineUntil: CHILL_END - 0.05 },
+  { id: "gemini", land: bar(0), exit: beat(8) - 0.05 },
+  { id: "copilot", land: beat(8), exit: CHILL_END - 0.05 },
+];
+// Original dialogue (not lyrics), AI models talking to each other like the reference: [who, text, from, until]
+const TALK: [number, string, number, number][] = [
+  [LX, "Is anyone else feeling replaced?", 0.15, 1.5],
+  [GX, "Only on Mondays", 1.55, 3.5],
+  [GX, "Why is it so quiet?", 3.7, 5.1],
+  [LX, "Something is coming...", 5.15, CHILL_END - 0.08],
 ];
 
 export const Chill: React.FC = () => {
@@ -30,9 +37,9 @@ export const Chill: React.FC = () => {
       <Ring x={LX} y={Y} t={t} at={0.103} size={170} />
       <Sparkles x={LX} y={Y} t={t} n={5} radius={210} seed={1} />
       <Logo name="chatgpt" size={270} x={LX} y={Y + bob(0)} scale={chatS.sx} scaleY={chatS.sy} rotate={Math.sin(t * 1.4) * 3} />
-      {/* a conversation: ChatGPT says the first line, Copilot answers with the second */}
-      <PhraseCaption text={GUESTS[0].line} x={LX + 60} y={Y - 260} t={t} at={GUESTS[0].lineAt} until={GUESTS[0].lineUntil} size={50} />
-      <PhraseCaption text={GUESTS[1].line} x={GX - 40} y={Y - 260} t={t} at={GUESTS[1].lineAt} until={GUESTS[1].lineUntil} size={50} />
+      {TALK.map(([x, text, a, b]) => (
+        <PhraseCaption key={text} text={text} x={x === LX ? LX + 90 : x - 20} y={Y - 270} t={t} at={a} until={b} size={52} />
+      ))}
       {GUESTS.map((g, i) => {
         if (t < g.land - 0.1 || t > g.exit + 0.3) return null;
         const k = hit(t, g.land, { damping: 10, stiffness: 260, mass: 0.7 });
