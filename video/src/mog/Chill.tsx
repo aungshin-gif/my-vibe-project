@@ -10,11 +10,13 @@ const GX = 1390;
 const Y = 610;
 export const CHILL_END = beat(15); // 6.456 - the crowd starts to gather
 
-type Guest = { id: LogoName; land: number; exit: number; line: string; lineAt: number; lineUntil: number; reply: string; replyAt: number; replyUntil: number; dx?: number };
+// Captions are the song's own lyric lines, shown while they are sung (times read from the lyric video).
+type Guest = { id: LogoName; land: number; exit: number; line: string; lineAt: number; lineUntil: number };
 const GUESTS: Guest[] = [
-  { id: "gemini", land: bar(0), exit: beat(8) - 0.05, line: "Am I overthinking?", lineAt: beat(2), lineUntil: beat(5.5), reply: "Just relax", replyAt: beat(5.5), replyUntil: beat(8) - 0.05 },
-  { id: "copilot", land: beat(8), exit: CHILL_END - 0.05, line: "I'm everywhere!", lineAt: beat(9), lineUntil: beat(12.5), reply: "Welcome back", replyAt: beat(12.5), replyUntil: CHILL_END - 0.05 },
+  { id: "gemini", land: bar(0), exit: beat(8) - 0.05, line: "But I am not so ready for this world", lineAt: 1.4, lineUntil: 3.5 },
+  { id: "copilot", land: beat(8), exit: CHILL_END - 0.05, line: "Now I see things I didn't see before", lineAt: 3.62, lineUntil: CHILL_END - 0.05 },
 ];
+
 export const Chill: React.FC = () => {
   const t = useT();
   const p = pulse(t);
@@ -40,8 +42,7 @@ export const Chill: React.FC = () => {
             <Sparkles x={gx} y={Y} t={t} n={6} radius={230} seed={i + 3} />
             <div style={{ position: "absolute", left: gx - 140, top: Y + 170, width: 280, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.08)", transform: `scaleX(${(0.85 + 0.15 * Math.sin(t * 2.4 + 1)) * Math.max(0, k) * out})` }} />
             <Logo name={g.id} size={260} x={gx + (1 - Math.min(1, k)) * 600} y={Y + bob(i + 1) - (1 - Math.min(1, k)) * 120} scale={s.sx} scaleY={s.sy} rotate={Math.sin(t * 1.7 + i) * 4 + (1 - Math.min(1, k)) * 40} />
-            <PhraseCaption text={g.line} x={gx} y={Y - 270} t={t} at={g.lineAt} until={g.lineUntil} size={66} />
-            <PhraseCaption text={g.reply} x={LX} y={Y - 270} t={t} at={g.replyAt} until={g.replyUntil} size={66} />
+            <PhraseCaption text={g.line} x={(LX + GX) / 2} y={Y - 300} t={t} at={g.lineAt} until={g.lineUntil} size={58} />
           </React.Fragment>
         );
       })}
