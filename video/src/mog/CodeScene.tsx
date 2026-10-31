@@ -1,23 +1,23 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
 import { KD, pulse } from "./beats";
-import { Confetti, INK, ORANGE, Ring, Sheet, Sparkles, ease, hit, useT } from "./common";
+import { Confetti, CornerClaude, INK, ORANGE, Ring, Sheet, Sparkles, ease, hit, useT } from "./common";
 import { franklin, mono, playfair } from "./fonts";
 
-export const CODE_START = KD[17];
+export const CODE_START = KD[21];
 export const CODE_END = KD[25];
 const typed = (s: string, t: number, at: number, cps: number) => s.slice(0, Math.max(0, Math.min(s.length, Math.floor((t - at) * cps))));
 
-const A0 = KD[17]; // terminal
-const B0 = KD[20]; // editor
-const C0 = KD[22]; // chart + tests
+const A0 = KD[21]; // terminal  22.77
+const B0 = KD[22]; // editor    23.109
+const C0 = KD[23]; // chart + tests 23.556
 const TERM = [
-  { at: A0, text: '$ claude "fix the flaky checkout test"', color: "#f3eadb", cps: 38 },
-  { at: A0 + 0.9, text: "● Reading src/checkout.test.ts", color: "#d6c9b0", cps: 60 },
-  { at: A0 + 1.15, text: "● Found race in retry backoff", color: "#d6c9b0", cps: 60 },
-  { at: A0 + 1.4, text: "- await sleep(50)", color: "#ff8c7a", cps: 70 },
-  { at: A0 + 1.55, text: "+ await retry(fetchCart, { jitter: true })", color: "#9be08a", cps: 80 },
-  { at: A0 + 1.9, text: "✓ 1,284 tests passed", color: "#9be08a", cps: 60 },
+  { at: A0, text: '$ claude "fix the flaky checkout test"', color: "#f3eadb", cps: 90 },
+  { at: A0 + 0.5, text: "● Reading src/checkout.test.ts", color: "#d6c9b0", cps: 110 },
+  { at: A0 + 0.7, text: "● Found race in retry backoff", color: "#d6c9b0", cps: 110 },
+  { at: A0 + 0.9, text: "- await sleep(50)", color: "#ff8c7a", cps: 120 },
+  { at: A0 + 1.0, text: "+ await retry(fetchCart, { jitter: true })", color: "#9be08a", cps: 140 },
+  { at: A0 + 1.3, text: "✓ 1,284 tests passed", color: "#9be08a", cps: 110 },
 ];
 const CODE: { text: string; c: string }[][] = [
   [{ text: "def", c: ORANGE }, { text: " rank(models, bench):", c: INK }],
@@ -45,11 +45,11 @@ export const CodeScene: React.FC<{ start: number }> = ({ start }) => {
   const shipAt = KD[24];
   const ship = hit(t, shipAt, { damping: 8, stiffness: 320, mass: 0.7 });
   const shake = t >= shipAt - 0.04 && t < shipAt + 0.3 ? Math.exp(-(t - shipAt) * 18) : 0;
-  const draw = ease(t, C0 + 0.1, C0 + 1.2);
+  const draw = ease(t, C0 + 0.05, C0 + 0.8);
   const len = 640;
   // marker highlight sweeping over the "model" line of the editor
-  const mark = ease(t, B0 + 1.2, B0 + 1.5);
-  const tests = Math.min(1284, Math.floor(1284 * ease(t, C0, C0 + 1.3)));
+  const mark = ease(t, B0 + 0.7, B0 + 0.95);
+  const tests = Math.min(1284, Math.floor(1284 * ease(t, C0, C0 + 0.8)));
   return (
     <AbsoluteFill style={{ background: "#fff", transform: `translate(${Math.sin(t * 95) * 12 * shake}px, ${Math.cos(t * 80) * 9 * shake}px)` }}>
       {FLOATERS.map((f, i) => (
@@ -57,7 +57,7 @@ export const CodeScene: React.FC<{ start: number }> = ({ start }) => {
       ))}
       <Sparkles x={960} y={540} t={t} n={8} radius={800} color="#eadfc9" seed={11} />
       <div style={{ position: "absolute", left: 100, top: 50, fontFamily: franklin, fontWeight: 800, fontSize: 26, letterSpacing: "0.3em", color: ORANGE, opacity: ease(t, A0, A0 + 0.2) }}>THE ENGINEERING DESK</div>
-      <Img src={staticFile("mog/claude.png")} style={{ position: "absolute", right: 110, top: 30, width: 90, height: 90, transform: `rotate(${t * 60}deg)`, opacity: ease(t, A0, A0 + 0.3) }} />
+      <CornerClaude t={t} />
       {/* A: terminal */}
       <div style={{ position: "absolute", left: 90, top: 130, width: 900, height: 470, background: "#1d1a17", borderRadius: 14, boxShadow: "12px 16px 0 rgba(60,44,28,0.22)", transform: `translateX(${(1 - Math.min(1, a)) * -1200}px) rotate(-2deg) scale(${1 + p * 0.006})`, padding: "26px 30px", fontFamily: mono, fontSize: 27, lineHeight: 1.55 }}>
         <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
@@ -79,8 +79,8 @@ export const CodeScene: React.FC<{ start: number }> = ({ start }) => {
         <div style={{ position: "absolute", left: 0, top: 0, right: 0, bottom: 0, padding: "26px 30px", fontFamily: mono, fontSize: 28, lineHeight: 1.6, border: `3px solid ${INK}`, borderRadius: 6 }}>
           <div style={{ position: "absolute", left: 66, top: 26 + 1.6 * 28 * 5 + 4, width: 560 * mark, height: 40, background: "rgba(255,196,64,0.55)", borderRadius: 4 }} />
           {CODE.map((ln, i) => {
-            const at = B0 + 0.1 + i * 0.16;
-            const chars = Math.max(0, Math.floor((t - at) * 80));
+            const at = B0 + 0.05 + i * 0.07;
+            const chars = Math.max(0, Math.floor((t - at) * 150));
             let used = 0;
             return (
               <div key={i} style={{ whiteSpace: "pre", display: "flex", position: "relative" }}>

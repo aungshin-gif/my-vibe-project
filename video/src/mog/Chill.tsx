@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { bar, beat, pulse } from "./beats";
-import { Logo, LogoName, PhraseCaption, Ring, Sparkles, hit, useT } from "./common";
+import { CornerClaude, Logo, LogoName, PhraseCaption, Ring, Sparkles, hit, useT } from "./common";
 
 // White screen, the logos chill together (ChatGPT stays on the left, Gemini and Copilot drop by). ChatGPT (left) stays; guests land on the beat and every caption stays
 // on screen for 1-1.5 s. Phrase changes follow the vocal: 1.4s "But I am not so ready...", 3.6s "Now I see...", 6.8s "I need...".
@@ -45,6 +45,7 @@ export const Chill: React.FC = () => {
           </React.Fragment>
         );
       })}
+      <CornerClaude t={t} />
     </AbsoluteFill>
   );
 };

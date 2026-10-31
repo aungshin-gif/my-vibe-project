@@ -1,66 +1,76 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { DROP2, beat, pulse } from "./beats";
-import { Burst, Logo, LogoName, Mogged, PhraseCaption, Ring, Sparkles, ease, hit, useT } from "./common";
+import { KD, PRE_KICKS, beat, pulse } from "./beats";
+import { Burst, CornerClaude, Logo, LogoName, Mogged, PhraseCaption, Ring, Sparkles, ease, hit, useT } from "./common";
 import { CHILL_END } from "./Chill";
 
-// The crowd of AI models gathers (kicks / half-beats), Claude lands on the 8.87s kick and then every model is stamped
-// MOGGED on its own kick (ten kicks, ten models), the last stamp right before the drop.
-const GRID: { id: LogoName; x: number; y: number; size: number; enter: number; stamp: number }[] = [
-  { id: "chatgpt", x: 280, y: 150, size: 128, enter: 0, stamp: 8.872 },
-  { id: "gemini", x: 280, y: 340, size: 118, enter: 6.659, stamp: 9.285 },
-  { id: "copilot", x: 280, y: 530, size: 116, enter: 6.859, stamp: 9.7 },
-  { id: "perplexity", x: 280, y: 720, size: 124, enter: 7.06, stamp: 10.09 },
-  { id: "grok", x: 280, y: 910, size: 116, enter: 7.263, stamp: 10.52 },
-  { id: "deepseek", x: 600, y: 150, size: 122, enter: 7.465, stamp: 10.889 },
-  { id: "metaai", x: 600, y: 340, size: 124, enter: 7.666, stamp: 11.499 },
-  { id: "mistral", x: 600, y: 530, size: 118, enter: 7.867, stamp: 11.899 },
-  { id: "qwen", x: 600, y: 720, size: 120, enter: 8.07, stamp: 12.31 },
-  { id: "kimi", x: 600, y: 910, size: 118, enter: 8.27, stamp: 12.713 },
-];
+// 1) the crowd of 16 AI models gathers, 2) Claude lands on the 8.87s kick and the crowd shivers while the tension builds
+// on every kick (no stamps yet), 3) the DROP (13.06): two models are stamped MOGGED on every heavy kick.
+const COLS = [230, 470, 710, 950];
+const ROWS = [170, 390, 610, 830];
+const IDS: LogoName[] = ["chatgpt", "gemini", "copilot", "perplexity", "grok", "deepseek", "metaai", "mistral", "qwen", "kimi", "minimax", "cohere", "huggingface", "zhipu", "ernie", "mimo"];
+const ENTER = [0, 6.659, 6.659, 6.859, 6.859, 7.06, 7.06, 7.263, 7.263, 7.465, 7.465, 7.666, 7.666, 7.867, 7.867, 8.07]; // two per half-beat
+const STAMP_AT = IDS.map((_, i) => KD[Math.floor(i / 2)]); // pair k is stamped on drop kick k
 const CLAUDE_AT = 8.872;
-const CX = 1450;
+const CX = 1500;
 export const MOG_START = CHILL_END;
-export const MOG_END = DROP2;
+export const MOG_END = KD[8];
 
 export const MogScene: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
   const p = pulse(t);
-  const shake = GRID.reduce((m, g) => (t >= g.stamp - 0.04 && t - g.stamp < 0.3 ? Math.max(m, Math.exp(-(t - g.stamp) * 18)) : m), 0);
-  const sx = Math.sin(t * 95) * 14 * shake;
-  const sy = Math.cos(t * 85) * 10 * shake;
+  const preKicks = [beat(21), beat(22), beat(23), beat(24), beat(25), beat(26), ...PRE_KICKS];
+  // tension: shiver grows toward the drop
+  const tension = ease(t, CLAUDE_AT, KD[0]);
+  const shiver = (i: number) => (t >= CLAUDE_AT && t < KD[0] ? Math.sin(t * 70 + i * 1.7) * (1 + 7 * tension) * (0.4 + p) : 0);
+  const shake = STAMP_AT.reduce((m, s) => (t >= s && t - s < 0.3 ? Math.max(m, Math.exp(-(t - s) * 18)) : m), 0);
+  const sx = Math.sin(t * 95) * 16 * shake;
+  const sy = Math.cos(t * 85) * 11 * shake;
   const claude = hit(t, CLAUDE_AT, { damping: 9, stiffness: 150, mass: 0.9 });
-  const spin = (1 - Math.min(1, claude)) * -360 + Math.sin(t * 1.4) * 4;
-  // ChatGPT glides from its chill spot into the crowd
+  const charge = 1 + tension * 0.18 + p * 0.05;
+  const spin = (1 - Math.min(1, claude)) * -360 + Math.sin(t * 1.4) * 4 + (t > CLAUDE_AT ? (t - CLAUDE_AT) * (40 + 220 * tension * tension) : 0);
   const glide = ease(t, 6.456, 6.95);
+  const flash = t < KD[0] ? ease(t, KD[0] - 0.2, KD[0]) : 1 - ease(t, KD[0], KD[0] + 0.25);
   return (
     <AbsoluteFill style={{ background: "#fff", transform: `translate(${sx}px, ${sy}px)` }}>
       <Burst x={CX} y={560} t={t} at={CLAUDE_AT} />
       <Ring x={CX} y={560} t={t} at={CLAUDE_AT} size={260} color="#D97757" w={8} />
-      <Sparkles x={CX} y={560} t={t} n={8} radius={290} color="#e8b9a5" seed={5} />
-      {GRID.map((g, i) => {
-        const k = i === 0 ? 1 : Math.max(0, hit(t, g.enter));
-        const stamped = t >= g.stamp - 0.02;
-        const base = i === 0 ? { x: 470 + (g.x - 470) * glide, y: 610 + (g.y - 610) * glide, size: 270 + (g.size - 270) * glide } : { x: g.x - (1 - Math.min(1, k)) * 700, y: g.y - (1 - Math.min(1, k)) * 140, size: g.size };
+      {preKicks.filter((k) => k > CLAUDE_AT && k < KD[0]).map((k, i) => (
+        <Ring key={k} x={CX} y={560} t={t} at={k} size={200 + i * 18} color="#D97757" w={4 + i * 0.6} life={0.8} />
+      ))}
+      <Ring x={CX} y={560} t={t} at={KD[0]} size={420} color="#D97757" w={14} life={0.9} />
+      <Sparkles x={CX} y={560} t={t} n={8} radius={300} color="#e8b9a5" seed={5} />
+      {IDS.map((id, i) => {
+        const cx = COLS[i % 4];
+        const cy = ROWS[Math.floor(i / 4)];
+        const e = ENTER[i];
+        const k = i === 0 ? 1 : Math.max(0, hit(t, e));
+        const stamped = t >= STAMP_AT[i];
+        const base = i === 0 ? { x: 470 + (cx - 470) * glide, y: 610 + (cy - 610) * glide, size: 270 + (132 - 270) * glide } : { x: cx - (1 - Math.min(1, k)) * 700 + shiver(i), y: cy - (1 - Math.min(1, k)) * 140 + shiver(i + 5) * 0.6, size: 132 };
         const sc = (i === 0 ? 1 : k) * (stamped ? 0.9 : 1) * (1 + p * 0.03);
         return (
-          <React.Fragment key={g.id}>
-            {i > 0 && <Ring x={g.x} y={g.y} t={t} at={g.enter} size={80} life={0.5} w={4} />}
-            <Logo name={g.id} size={base.size} x={base.x} y={base.y + (stamped ? 6 : 0)} scale={sc} rotate={stamped ? Math.sin((t - g.stamp) * 40) * 5 * Math.exp(-(t - g.stamp) * 8) : (1 - Math.min(1, k)) * 40} />
+          <React.Fragment key={id}>
+            {i > 0 && <Ring x={cx} y={cy} t={t} at={e} size={80} life={0.5} w={4} />}
+            <Logo name={id} size={base.size} x={base.x} y={base.y + (stamped ? 6 : 0)} scale={sc} rotate={stamped ? Math.sin((t - STAMP_AT[i]) * 40) * 5 * Math.exp(-(t - STAMP_AT[i]) * 8) : (1 - Math.min(1, k)) * 40 + shiver(i + 9) * 0.5} />
           </React.Fragment>
         );
       })}
-      {GRID.map((g) => (
-        <React.Fragment key={`m${g.id}`}>
-          <Ring x={g.x + 40} y={g.y + 28} t={t} at={g.stamp} size={110} color="#e5251f" w={6} life={0.5} />
-          <Mogged x={g.x + 50} y={g.y + 30} t={t} at={g.stamp} size={40} />
-        </React.Fragment>
-      ))}
-      <Logo name="claude" size={360} x={CX} y={580} scale={Math.max(0, claude) * (1 + p * 0.06)} rotate={spin} />
-      <PhraseCaption text="Why does nobody use me?" x={1100} y={150} t={t} at={7.06} until={8.55} size={56} />
+      {IDS.map((id, i) => {
+        const cx = COLS[i % 4];
+        const cy = ROWS[Math.floor(i / 4)];
+        return (
+          <React.Fragment key={`m${id}`}>
+            <Ring x={cx + 36} y={cy + 30} t={t} at={STAMP_AT[i]} size={100} color="#e5251f" w={6} life={0.5} />
+            <Mogged x={cx + 46} y={cy + 32} t={t} at={STAMP_AT[i]} size={40} />
+          </React.Fragment>
+        );
+      })}
+      <Logo name="claude" size={380} x={CX} y={580} scale={Math.max(0, claude) * charge} rotate={spin} />
+      <PhraseCaption text="Why does nobody use me?" x={1100} y={80} t={t} at={7.06} until={8.55} size={52} />
       <PhraseCaption text="Why do you mog all of us?" x={CX} y={250} t={t} at={9.285} until={11.7} size={50} />
-      <PhraseCaption text="I don't know" x={CX} y={250} t={t} at={11.899} until={DROP2 - 0.02} size={60} />
-      <AbsoluteFill style={{ background: "#fff", opacity: ease(t, DROP2 - 0.14, DROP2) }} />
+      <PhraseCaption text="I don't know" x={CX} y={250} t={t} at={11.899} until={12.95} size={60} />
+      <CornerClaude t={t} />
+      <AbsoluteFill style={{ background: "#fff", opacity: Math.max(0, flash) * 0.95 }} />
     </AbsoluteFill>
   );
 };

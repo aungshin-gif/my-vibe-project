@@ -10,13 +10,13 @@ export const ease = (t: number, a: number, b: number) => {
 };
 
 // Animations are started a little BEFORE the beat so that their visible impact lands on it.
-export const LEAD = 0.06;
+export const LEAD = 0.035;
 const SNAP = { damping: 13, stiffness: 300, mass: 0.6 };
 export const hit = (t: number, at: number, cfg = SNAP): number => spring({ frame: Math.max(0, (t - at + LEAD) * MOG_FPS), fps: MOG_FPS, config: cfg });
 
 export const ORANGE = "#D97757";
 export const INK = "#1d1a17";
-export const PAPER = "#F3EAD7";
+export const PAPER = "#FAF3E6";
 
 export const LOGOS = {
   chatgpt: { src: "mog/chatgpt.png", ratio: 737 / 728 },
@@ -30,6 +30,12 @@ export const LOGOS = {
   mistral: { src: "mog/mistral.svg", ratio: 1 },
   qwen: { src: "mog/qwen.svg", ratio: 1 },
   kimi: { src: "mog/kimi.svg", ratio: 1 },
+  minimax: { src: "mog/minimax.svg", ratio: 1 },
+  cohere: { src: "mog/cohere.svg", ratio: 1 },
+  huggingface: { src: "mog/huggingface.svg", ratio: 1 },
+  zhipu: { src: "mog/zhipu.svg", ratio: 1 },
+  ernie: { src: "mog/ernie.svg", ratio: 1 },
+  mimo: { src: "mog/mimo.svg", ratio: 1 },
 } as const;
 export type LogoName = keyof typeof LOGOS;
 
@@ -53,12 +59,12 @@ export const PhraseCaption: React.FC<{ text: string; x: number; y: number; t: nu
 };
 
 export const Mogged: React.FC<{ x: number; y: number; t: number; at: number; size?: number }> = ({ x, y, t, at, size = 54 }) => {
-  if (t < at - LEAD) return null;
-  const k = Math.min(1, Math.max(0, (t - at + LEAD) / 0.16));
-  const s = interpolate(k, [0, 1], [2.8, 1]);
-  const rot = -5 + (1 - k) * 9;
+  if (t < at) return null; // not a frame before the kick
+  const k = Math.min(1, (t - at) / 0.12);
+  const s = interpolate(k, [0, 1], [2.4, 1]);
+  const rot = -5 + (1 - k) * 8;
   return (
-    <div style={{ position: "absolute", left: x, top: y, transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${s})`, opacity: Math.min(1, k * 4), background: "#0b0b0b", padding: `${size * 0.04}px ${size * 0.2}px`, border: "3px solid #fff", boxShadow: "6px 6px 0 #e5251f" }}>
+    <div style={{ position: "absolute", left: x, top: y, transform: `translate(-50%, -50%) rotate(${rot}deg) scale(${s})`, opacity: Math.min(1, 0.4 + k * 3), background: "#0b0b0b", padding: `${size * 0.04}px ${size * 0.2}px`, border: "3px solid #fff", boxShadow: "6px 6px 0 #e5251f" }}>
       <span style={{ fontFamily: anton, fontSize: size, letterSpacing: "0.04em", color: "#ff2b2b", WebkitTextStroke: "1.5px #fff", paintOrder: "stroke fill" }}>MOGGED</span>
     </div>
   );
@@ -141,9 +147,9 @@ export const Paper: React.FC<{ tint?: string }> = ({ tint = PAPER }) => {
   const fibre = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.5' numOctaves='2' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.4 0 0 0 0 0.28 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23f)'/%3E%3C/svg%3E")`;
   return (
     <AbsoluteFill style={{ background: tint }}>
-      <AbsoluteFill style={{ backgroundImage: fibre, backgroundSize: "600px", opacity: 0.55, mixBlendMode: "multiply" }} />
-      <AbsoluteFill style={{ backgroundImage: noise, backgroundSize: "300px", backgroundPosition: `${(f * 3) % 300}px ${(f * 5) % 300}px`, opacity: 0.22, mixBlendMode: "multiply" }} />
-      <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 55%, rgba(120,84,40,0.32) 100%)" }} />
+      <AbsoluteFill style={{ backgroundImage: fibre, backgroundSize: "600px", opacity: 0.3, mixBlendMode: "multiply" }} />
+      <AbsoluteFill style={{ backgroundImage: noise, backgroundSize: "300px", backgroundPosition: `${(f * 3) % 300}px ${(f * 5) % 300}px`, opacity: 0.1, mixBlendMode: "multiply" }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, transparent 55%, rgba(150,110,60,0.12) 100%)" }} />
     </AbsoluteFill>
   );
 };
@@ -165,7 +171,12 @@ const PaperFill: React.FC = () => {
   return (
     <>
       <div style={{ position: "absolute", inset: 0, background: PAPER }} />
-      <div style={{ position: "absolute", inset: 0, backgroundImage: noise, backgroundSize: "300px", opacity: 0.2, mixBlendMode: "multiply" }} />
+      <div style={{ position: "absolute", inset: 0, backgroundImage: noise, backgroundSize: "300px", opacity: 0.1, mixBlendMode: "multiply" }} />
     </>
   );
 };
+
+// small Claude mark spinning in the corner of every scene
+export const CornerClaude: React.FC<{ t: number; x?: number; y?: number; size?: number }> = ({ t, x = 1850, y = 56, size = 62 }) => (
+  <Img src={staticFile("mog/claude.png")} style={{ position: "absolute", left: x - size / 2, top: y - size / 2, width: size, height: size, transform: `rotate(${t * 110}deg)` }} />
+);
