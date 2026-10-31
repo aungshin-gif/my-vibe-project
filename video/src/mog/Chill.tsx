@@ -12,8 +12,8 @@ export const CHILL_END = beat(15); // 6.456 - the crowd starts to gather
 
 type Guest = { id: LogoName; land: number; exit: number; line: string; lineAt: number; lineUntil: number; reply: string; replyAt: number; replyUntil: number; dx?: number };
 const GUESTS: Guest[] = [
-  { id: "gemini", land: bar(0), exit: beat(8) - 0.05, line: "Why do I over correct?", lineAt: beat(2), lineUntil: beat(5.5), reply: "Focus more", replyAt: beat(5.5), replyUntil: beat(8) - 0.05 },
-  { id: "copilot", land: beat(8), exit: CHILL_END - 0.05, line: "Why am I everywhere?", lineAt: beat(9), lineUntil: beat(12.5), reply: "Seen before", replyAt: beat(12.5), replyUntil: CHILL_END - 0.05 },
+  { id: "gemini", land: bar(0), exit: beat(8) - 0.05, line: "Am I overthinking?", lineAt: beat(2), lineUntil: beat(5.5), reply: "Just relax", replyAt: beat(5.5), replyUntil: beat(8) - 0.05 },
+  { id: "copilot", land: beat(8), exit: CHILL_END - 0.05, line: "I'm everywhere!", lineAt: beat(9), lineUntil: beat(12.5), reply: "Welcome back", replyAt: beat(12.5), replyUntil: CHILL_END - 0.05 },
 ];
 export const Chill: React.FC = () => {
   const t = useT();

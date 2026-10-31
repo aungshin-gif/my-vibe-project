@@ -66,7 +66,7 @@ export const MogScene: React.FC<{ start: number }> = ({ start }) => {
         );
       })}
       <Logo name="claude" size={380} x={CX} y={580} scale={Math.max(0, claude) * charge} rotate={spin} />
-      <PhraseCaption text="Why does nobody use me?" x={1100} y={80} t={t} at={beat(17)} until={beat(21) - 0.1} size={52} />
+      <PhraseCaption text="Pick me too!" x={1100} y={80} t={t} at={beat(17)} until={beat(21) - 0.1} size={52} />
       <PhraseCaption text="Why do you mog all of us?" x={CX} y={250} t={t} at={beat(22)} until={beat(28)} size={50} />
       <PhraseCaption text="I don't know" x={CX} y={250} t={t} at={beat(29)} until={KD[0] - 0.02} size={60} />
       <CornerClaude t={t} />
