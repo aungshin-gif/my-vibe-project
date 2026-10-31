@@ -6,9 +6,9 @@ import { franklin, playfair, playfairItalic } from "./fonts";
 
 // "ANTHROPIC" built letter by letter on the kicks; the O is the spinning Claude mark.
 const LETTERS = ["A", "N", "T", "H", "R", "*", "P", "I", "C"];
-const S0 = KD[4]; // 14.50 - masthead page, after the lyric page
-const REVEAL = Array.from({ length: 9 }, (_, i) => KD[4] + i * 0.14);
-export const MAST_START = KD[4];
+const S0 = KD[1]; // 13.29 - new page right after the MOGGED hits
+const REVEAL = [KD[1], KD[1] + 0.2, KD[2], KD[2] + 0.2, KD[3], KD[3] + 0.2, KD[4], KD[4] + 0.2, KD[5]];
+export const MAST_START = KD[1];
 export const MAST_END = KD[8];
 
 export const Masthead: React.FC<{ start: number }> = ({ start }) => {
@@ -34,7 +34,7 @@ export const Masthead: React.FC<{ start: number }> = ({ start }) => {
         {Array.from({ length: 14 }, (_, i) => (
           <div key={i} style={{ position: "absolute", left: 130 + i * 62, top: 235, width: 18, height: 18, borderRadius: 9, background: ORANGE, opacity: 0.8 * ease(t, S0 + 0.1 + i * 0.03, S0 + 0.3 + i * 0.03) * (0.5 + 0.5 * Math.sin(t * 6 + i)) }} />
         ))}
-        <Ring x={960} y={470} t={t} at={KD[5]} size={300} color="#D97757" w={8} />
+        <Ring x={960} y={470} t={t} at={KD[3] + 0.2} size={300} color="#D97757" w={8} />
         <Sparkles x={960} y={470} t={t} n={8} radius={520} color="#b99f7d" seed={2} />
         <div style={{ position: "absolute", left: 0, right: 0, top: 330, textAlign: "center", fontFamily: playfair, fontWeight: 900, fontSize: 250, letterSpacing: "-0.01em", color: INK, whiteSpace: "nowrap", lineHeight: 1, transform: `scale(${1 + p * 0.014})` }}>
           {LETTERS.map((c, i) => {
