@@ -1,15 +1,15 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { bar, beat, pulse } from "./beats";
+import { KD, pulse } from "./beats";
 import { BENCH } from "./data";
 import { Confetti, INK, ORANGE, Ring, Sheet, Sparkles, Ticker, ease, hit, useT } from "./common";
 import { franklin, playfair, serif } from "./fonts";
 
 // White desk, a sheet of warm paper with the scoreboard. Rows land on the kicks; the Claude row lands on the downbeat.
-const AT = [beat(37), beat(38), beat(39), beat(40), beat(43), bar(11)]; // DeepSeek ... Gemini, GPT, Fable, Opus (reverse of the table order)
+const AT = [KD[8], KD[9], KD[10], KD[11], KD[12], KD[13]]; // DeepSeek, Grok, Gemini, GPT, Fable, Opus (landing order)
 const ORDER_AT = [AT[5], AT[4], AT[3], AT[2], AT[1], AT[0]]; // table row i (Opus first) -> its landing time
-export const BENCH_START = bar(9);
-export const BENCH_END = bar(12);
+export const BENCH_START = KD[7];
+export const BENCH_END = KD[17];
 const MIN = 70;
 const MAX = 100;
 const TILES = [
@@ -22,11 +22,11 @@ export const Bench: React.FC<{ start: number }> = ({ start }) => {
   const t = useT() + start;
   const p = pulse(t);
   const sheet = hit(t, BENCH_START, { damping: 14, stiffness: 140, mass: 0.9 });
-  const head = hit(t, beat(36));
-  const opus = bar(11);
-  const stamp = hit(t, beat(48), { damping: 8, stiffness: 300, mass: 0.7 });
+  const head = hit(t, KD[7]);
+  const opus = KD[13];
+  const stamp = hit(t, KD[14], { damping: 8, stiffness: 300, mass: 0.7 });
   const shake = t >= opus - 0.04 && t < opus + 0.3 ? Math.exp(-(t - opus) * 18) : 0;
-  const arrow = ease(t, beat(46), beat(46) + 0.5);
+  const arrow = ease(t, KD[13] + 0.2, KD[13] + 0.7);
   return (
     <AbsoluteFill style={{ background: "#fff", transform: `translate(${Math.sin(t * 95) * 10 * shake}px, ${Math.cos(t * 80) * 8 * shake}px)` }}>
       <Sparkles x={960} y={540} t={t} n={10} radius={840} color="#e5ddcf" seed={8} />
@@ -34,7 +34,7 @@ export const Bench: React.FC<{ start: number }> = ({ start }) => {
         <div style={{ position: "absolute", left: 40, right: 40, top: 30, height: 5, background: INK }} />
         <div style={{ position: "absolute", left: 40, top: 52, fontFamily: franklin, fontWeight: 800, fontSize: 24, letterSpacing: "0.3em", color: ORANGE, opacity: Math.min(1, head) }}>THE SCOREBOARD</div>
         <div style={{ position: "absolute", left: 40, top: 86, fontFamily: playfair, fontWeight: 900, fontSize: 80, color: INK, lineHeight: 1, opacity: Math.min(1, head), transform: `translateY(${(1 - Math.min(1, head)) * 40}px)` }}>Claude takes the top spot</div>
-        <div style={{ position: "absolute", left: 40, top: 184, fontFamily: serif, fontStyle: "italic", fontSize: 28, color: "#5a4f43", opacity: ease(t, beat(36) + 0.2, beat(36) + 0.5) }}>
+        <div style={{ position: "absolute", left: 40, top: 184, fontFamily: serif, fontStyle: "italic", fontSize: 28, color: "#5a4f43", opacity: ease(t, KD[7] + 0.2, KD[7] + 0.5) }}>
           {BENCH.metric} · higher is better
         </div>
         {BENCH.rows.map((r, i) => {
@@ -69,7 +69,7 @@ export const Bench: React.FC<{ start: number }> = ({ start }) => {
       </Sheet>
       {/* stat tiles flipping in on the last bar */}
       {TILES.map((tl, i) => {
-        const at = beat(48) + i * 0.2018;
+        const at = [KD[15], KD[16], KD[16] + 0.26][i];
         const k = hit(t, at, { damping: 12, stiffness: 240, mass: 0.7 });
         const flip = (1 - Math.min(1, k)) * 90;
         const n = (tl.v * ease(t, at, at + 0.5)).toFixed(1);

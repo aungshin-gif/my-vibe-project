@@ -6,9 +6,11 @@ export const beat = (n: number): number => GRID0 + PERIOD * n;
 export const bar = (m: number): number => beat(1 + 4 * m);
 export const DROP = beat(29); // 12.105 - the loud section starts here
 
-// kicks after the drop are syncopated, so the measured ones are used there
-const LATE = [13.153, 13.743, 14.173, 14.573, 14.853, 15.043, 15.253, 15.493, 15.783, 16.273, 16.563, 16.963, 17.403, 17.673, 17.863, 18.213, 18.483, 19.503, 19.793, 20.193, 20.583, 21.033, 21.433, 21.943, 22.233, 23.013, 23.423, 23.813, 24.703, 25.203, 25.613, 25.843, 26.053, 26.273, 26.643, 27.073];
-export const HITS: number[] = [0.103, ...Array.from({ length: 31 }, (_, n) => beat(n)), ...LATE];
+// Measured sub-bass kicks (the track is hard-tek: after the drop the kicks are syncopated, so they are NOT on a grid).
+export const PRE_KICKS = [11.499, 11.899, 12.31, 12.713]; // build-up after the grid runs out (beat 26 = 10.894)
+export const DROP2 = 13.06; // the first heavy kick of the drop
+export const KD = [13.06, 13.431, 13.874, 14.321, 14.725, 15.044, 15.539, 16.213, 16.76, 17.111, 17.546, 17.953, 18.268, 19.007, 19.542, 19.989, 20.236, 20.775, 21.094, 21.497, 22.024, 22.77, 23.109, 23.556, 23.916, 25.217, 25.616, 25.959, 26.33, 26.673];
+export const HITS: number[] = [0.103, ...Array.from({ length: 27 }, (_, n) => beat(n)), ...PRE_KICKS, ...KD];
 
 // 1 on a hit, decaying over ~0.25s
 export const pulse = (t: number, decay = 9): number => {

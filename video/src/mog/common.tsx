@@ -26,6 +26,10 @@ export const LOGOS = {
   claude: { src: "mog/claude.png", ratio: 1 },
   grok: { src: "mog/grok.svg", ratio: 1 },
   deepseek: { src: "mog/deepseek.svg", ratio: 1 },
+  metaai: { src: "mog/metaai.svg", ratio: 1 },
+  mistral: { src: "mog/mistral.svg", ratio: 1 },
+  qwen: { src: "mog/qwen.svg", ratio: 1 },
+  kimi: { src: "mog/kimi.svg", ratio: 1 },
 } as const;
 export type LogoName = keyof typeof LOGOS;
 

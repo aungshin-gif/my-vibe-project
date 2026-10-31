@@ -1,16 +1,16 @@
 import React from "react";
 import { AbsoluteFill, Img, staticFile } from "remotion";
-import { bar, beat, pulse } from "./beats";
+import { KD, pulse } from "./beats";
 import { Confetti, INK, ORANGE, Ring, Sheet, Sparkles, ease, hit, useT } from "./common";
 import { franklin, mono, playfair } from "./fonts";
 
-export const CODE_START = bar(12);
-export const CODE_END = bar(15);
+export const CODE_START = KD[17];
+export const CODE_END = KD[25];
 const typed = (s: string, t: number, at: number, cps: number) => s.slice(0, Math.max(0, Math.min(s.length, Math.floor((t - at) * cps))));
 
-const A0 = bar(12); // terminal
-const B0 = bar(13); // editor
-const C0 = bar(14); // chart + tests
+const A0 = KD[17]; // terminal
+const B0 = KD[20]; // editor
+const C0 = KD[22]; // chart + tests
 const TERM = [
   { at: A0, text: '$ claude "fix the flaky checkout test"', color: "#f3eadb", cps: 38 },
   { at: A0 + 0.9, text: "● Reading src/checkout.test.ts", color: "#d6c9b0", cps: 60 },
@@ -42,7 +42,7 @@ export const CodeScene: React.FC<{ start: number }> = ({ start }) => {
   const a = hit(t, A0, { damping: 13, stiffness: 180, mass: 0.8 });
   const b = hit(t, B0, { damping: 13, stiffness: 180, mass: 0.8 });
   const c = hit(t, C0, { damping: 13, stiffness: 180, mass: 0.8 });
-  const shipAt = beat(59);
+  const shipAt = KD[24];
   const ship = hit(t, shipAt, { damping: 8, stiffness: 320, mass: 0.7 });
   const shake = t >= shipAt - 0.04 && t < shipAt + 0.3 ? Math.exp(-(t - shipAt) * 18) : 0;
   const draw = ease(t, C0 + 0.1, C0 + 1.2);
@@ -123,7 +123,7 @@ export const CodeScene: React.FC<{ start: number }> = ({ start }) => {
           <div style={{ width: `${(tests / 1284) * 100}%`, height: "100%", borderRadius: 6, background: "#2f7d4f" }} />
         </div>
       </div>
-      <div style={{ position: "absolute", right: 110, top: 800, fontFamily: franklin, fontWeight: 800, fontSize: 120, letterSpacing: "0.04em", color: "#c0361e", border: "8px solid #c0361e", padding: "0 28px", borderRadius: 10, transform: `rotate(-8deg) scale(${Math.max(0, ship)})`, opacity: 0.95 }}>SHIPPED</div>
+      <div style={{ position: "absolute", right: 70, top: 830, fontFamily: franklin, fontWeight: 800, fontSize: 96, letterSpacing: "0.04em", color: "#c0361e", border: "8px solid #c0361e", padding: "0 28px", borderRadius: 10, transform: `rotate(-8deg) scale(${Math.max(0, ship)})`, opacity: 0.95 }}>SHIPPED</div>
       <Confetti x={1560} y={880} t={t} at={shipAt} n={50} />
     </AbsoluteFill>
   );
