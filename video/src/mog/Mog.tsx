@@ -2,7 +2,8 @@ import React from "react";
 import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { Bench, BENCH_END, BENCH_START } from "./Bench";
 import { CHILL_END, Chill } from "./Chill";
-import { ChartPage, ChatPage, CodePage, NamesPage, PAGE, StatsPage, TermPage } from "./Pages";
+import { ChatPage, CodePage, FlashPage, NamesPage, PAGE, TermPage } from "./Pages";
+import { KD } from "./beats";
 import { MOG_FPS } from "./common";
 import "./fonts";
 import { MAST_END, MAST_START, Masthead } from "./Masthead";
@@ -32,17 +33,29 @@ export const Mog: React.FC = () => (
     <Sequence from={S(PAGE.chat[0])} durationInFrames={S(PAGE.chat[1]) - S(PAGE.chat[0])}>
       <ChatPage />
     </Sequence>
-    <Sequence from={S(PAGE.code[0])} durationInFrames={S(PAGE.code[1]) - S(PAGE.code[0])}>
-      <CodePage />
+    <Sequence from={S(KD[13])} durationInFrames={S(KD[14]) - S(KD[13])}>
+      <FlashPage i={0} />
     </Sequence>
-    <Sequence from={S(PAGE.chart[0])} durationInFrames={S(PAGE.chart[1]) - S(PAGE.chart[0])}>
-      <ChartPage />
+    <Sequence from={S(KD[14])} durationInFrames={S(KD[15]) - S(KD[14])}>
+      <FlashPage i={1} />
     </Sequence>
-    <Sequence from={S(PAGE.stats[0])} durationInFrames={S(PAGE.stats[1]) - S(PAGE.stats[0])}>
-      <StatsPage />
+    <Sequence from={S(KD[15])} durationInFrames={S(KD[16]) - S(KD[15])}>
+      <FlashPage i={2} />
+    </Sequence>
+    <Sequence from={S(KD[16])} durationInFrames={S(KD[17]) - S(KD[16])}>
+      <FlashPage i={3} />
+    </Sequence>
+    <Sequence from={S(KD[17])} durationInFrames={S(KD[18]) - S(KD[17])}>
+      <FlashPage i={4} />
+    </Sequence>
+    <Sequence from={S(KD[18])} durationInFrames={S(KD[19]) - S(KD[18])}>
+      <FlashPage i={5} />
     </Sequence>
     <Sequence from={S(PAGE.term[0])} durationInFrames={S(PAGE.term[1]) - S(PAGE.term[0])}>
       <TermPage />
+    </Sequence>
+    <Sequence from={S(PAGE.code[0])} durationInFrames={S(PAGE.code[1]) - S(PAGE.code[0])}>
+      <CodePage />
     </Sequence>
     <Sequence from={S(PAGE.names[0])} durationInFrames={S(PAGE.names[1]) - S(PAGE.names[0])}>
       <NamesPage />

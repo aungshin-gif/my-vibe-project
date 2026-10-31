@@ -17,10 +17,9 @@ const pop = (t: number, at: number) => Math.max(0, hit(t, at, { damping: 12, sti
 
 export const PAGE = {
   chat: [KD[10], KD[13]],
-  code: [KD[13], KD[16]],
-  chart: [KD[16], KD[19]],
-  stats: [KD[19], KD[22]],
-  term: [KD[22], KD[25]],
+  flash: [KD[13], KD[19]], // six one-kick flash pages
+  term: [KD[19], KD[22]],
+  code: [KD[22], KD[25]],
   names: [KD[25], KD[30]],
 } as const;
 
@@ -112,7 +111,7 @@ export const CodePage: React.FC = () => {
 
 // 3) the chart
 export const ChartPage: React.FC = () => {
-  const s = PAGE.chart[0];
+  const s = KD[16];
   const t = useT() + s;
   const a = pop(t, s);
   const draw = ease(t, s + 0.1, s + 0.9);
@@ -137,7 +136,7 @@ export const ChartPage: React.FC = () => {
 
 // 4) three real numbers from the board
 export const StatsPage: React.FC = () => {
-  const s = PAGE.stats[0];
+  const s = KD[19];
   const t = useT() + s;
   const p = pulse(t);
   const fable = ROWS[0], opus = ROWS[2];
@@ -206,5 +205,32 @@ export const NamesPage: React.FC = () => {
         <Confetti x={1500} y={260} t={t} at={KD[27]} n={60} />
       </AbsoluteFill>
     </Frame>
+  );
+};
+
+// rapid-fire montage: six pages, one kick (0.4 s) each, hard cuts
+type Flash = { bg: string; fg: string; small: string; big: string; sub: string; mono?: boolean };
+const FLASHES: Flash[] = [
+  { bg: BG, fg: TEXT, small: "OVERALL · #1", big: "85.7", sub: "Claude Fable 5.1" },
+  { bg: "#D97757", fg: "#fff", small: "CODING · #1", big: "97.7", sub: "Claude Fable 5.1" },
+  { bg: "#1F1D1A", fg: "#F3EADB", small: "DESIGN · #1", big: "86.9", sub: "Claude Opus 5.5" },
+  { bg: "#F3F1EA", fg: TEXT, small: "ONE LINE", big: "claude.messages.create()", sub: "ship it", mono: true },
+  { bg: "#E4F1E6", fg: GREEN, small: "ALL GREEN", big: "1,284 ✓", sub: "tests passed" },
+  { bg: BG, fg: "#A8442A", small: "THE REST", big: "Claude", sub: "pulls ahead" },
+];
+export const FlashPage: React.FC<{ i: number }> = ({ i }) => {
+  const f = FLASHES[i];
+  const s = KD[13 + i];
+  const t = useT() + s;
+  const k = pop(t, s);
+  const shake = Math.exp(-(t - s) * 20);
+  return (
+    <AbsoluteFill style={{ background: f.bg, transform: `translate(${Math.sin(t * 120) * 10 * shake}px, ${Math.cos(t * 100) * 8 * shake}px)` }}>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 250, textAlign: "center", fontFamily: franklin, fontWeight: 800, fontSize: 46, letterSpacing: "0.3em", color: f.fg, opacity: 0.75 }}>{f.small}</div>
+      <div style={{ position: "absolute", left: 0, right: 0, top: f.mono ? 410 : 330, textAlign: "center", fontFamily: f.mono ? mono : serif, fontWeight: 600, fontSize: f.mono ? 96 : 330, color: f.fg, lineHeight: 1.1, transform: `scale(${(0.6 + 0.4 * Math.min(1.1, k))})`, opacity: Math.min(1, k * 3) }}>{f.big}</div>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 800, textAlign: "center", fontFamily: franklin, fontWeight: 700, fontSize: 56, color: f.fg, opacity: 0.9 }}>{f.sub}</div>
+      <Ring x={960} y={540} t={t} at={s} size={600} color={f.fg} w={6} life={0.4} />
+      <CornerClaude t={t} />
+    </AbsoluteFill>
   );
 };
